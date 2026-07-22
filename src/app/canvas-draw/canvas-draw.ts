@@ -1,4 +1,13 @@
-import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  AfterViewInit,
+  OnDestroy,
+  NgZone,
+  inject,
+} from '@angular/core';
+import { ExperienceManager } from '../../ExperienceManager.js';
 
 @Component({
   selector: 'app-canvas-draw',
@@ -9,45 +18,67 @@ import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
       display: block;
       width: 100vw;
       height: 100vh;
+      overflow: hidden;
+      position: relative;
     }
-    canvas {
-      display: block;
+    .three-container {
       width: 100%;
       height: 100%;
-      border: 2px solid black;
-      margin: 0;  
+    }
+    .ui-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .ui-container > * {
+      pointer-events: auto;
+    }
+    .play-prompt {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 10;
     }
   `,
 })
-export class CanvasDraw implements AfterViewInit {
-  @ViewChild('miCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+export class CanvasDraw implements AfterViewInit, OnDestroy {
+  @ViewChild('threeContainer') containerRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('uiContainer') uiContainerRef!: ElementRef<HTMLDivElement>;
 
-  private ctx!: CanvasRenderingContext2D;
-  private dibujando = false;
+  private experience: any = null;
+  private ngZone = inject(NgZone);
+
+  showPlayPrompt = true;
 
   ngAfterViewInit() {
-    const canvas = this.canvasRef.nativeElement;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    this.ctx = canvas.getContext('2d')!;
-    this.ctx.strokeStyle = '#ffffff';
-    this.ctx.lineWidth = 3;
-    this.ctx.lineCap = 'round';
+    this.ngZone.runOutsideAngular(() => {
+      this.experience = new ExperienceManager(
+        this.containerRef.nativeElement,
+        this.uiContainerRef.nativeElement
+      );
+      this.experience.start();
+    });
   }
 
-  iniciarDibujo(event: MouseEvent) {
-    this.dibujando = true;
-    this.ctx.beginPath();
-    this.ctx.moveTo(event.offsetX, event.offsetY);
+  onUserInteraction() {
+    this.experience?.resumeAudio();
+    this.showPlayPrompt = false;
   }
 
-  dibujar(event: MouseEvent) {
-    if (!this.dibujando) return;
-    this.ctx.lineTo(event.offsetX, event.offsetY);
-    this.ctx.stroke();
-  }
-
-  detenerDibujo() {
-    this.dibujando = false;
+  ngOnDestroy() {
+    this.experience?.dispose();
+    this.experience = null;
   }
 }

@@ -1,7 +1,8 @@
-<canvas
-  #miCanvas
-  (mousedown)="iniciarDibujo($event)"
-  (mousemove)="dibujar($event)"
-  (mouseup)="detenerDibujo()"
-  (mouseleave)="detenerDibujo()">
-</canvas>
+<div #threeContainer class="three-container"></div>
+<div #uiContainer class="ui-container"></div>
+
+@if (showPlayPrompt) {
+  <div class="play-prompt" (click)="onUserInteraction()">
+    Click para iniciar
+  </div>
+}
