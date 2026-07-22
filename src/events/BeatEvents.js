@@ -1,6 +1,5 @@
 /**
  * BeatEvents.js — Eventos sincronizados con la música
- * Equivalente a: js/lights/events/BeatEvents.js
  * 
  * Detecta beats usando análisis de frecuencia en tiempo real.
  * Dispara deformaciones del terreno con dos modos de restauración:
@@ -67,7 +66,7 @@ export class BeatEvents {
         this.midBeatTriggered = false;
 
         // ─── Modo de textura del terreno ───
-        this.terrainTextureMode = 'solid'; // 'solid' | 'wireframe'
+        this.terrainTextureMode = 'wireframe';
     }
 
     update(state, music) {

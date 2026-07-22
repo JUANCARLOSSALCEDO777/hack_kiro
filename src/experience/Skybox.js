@@ -1,6 +1,5 @@
 /**
  * Skybox.js — Cielo envolvente con color animado
- * Equivalente a: js/lights/experience/Skybox.js
  * 
  * Un cilindro invertido (caras hacia adentro) que sigue a la cámara.
  * El color cambia cíclicamente entre azul y magenta usando HSL.

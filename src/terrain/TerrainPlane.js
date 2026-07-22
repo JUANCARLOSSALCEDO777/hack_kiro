@@ -1,16 +1,15 @@
 /**
  * TerrainPlane.js — Geometría del terreno generada desde un heightmap
- * Equivalente a: js/lights/terrain/TerrainPlane.js
  * 
  * PROCESO:
  * 1. Generar un heightmap procedural (Perlin noise simulado con canvas)
  * 2. Aplicar blur para suavizar
  * 3. Crear BufferGeometry con vértices elevados según el heightmap
  * 4. La geometría es tileable (los bordes coinciden)
- * 
- * Diferencia con el original:
- * - Original usaba THREE.Geometry (deprecated) → ahora usamos BufferGeometry
- * - Original leía una imagen PNG → ahora generamos el heightmap proceduralmente
+ *
+ * Notas:
+ * - Usa BufferGeometry
+ * - El heightmap se genera proceduralmente (no se lee de una imagen PNG)
  *   (pero la lógica es idéntica: leer píxeles de un canvas)
  */
 
@@ -189,7 +188,7 @@ export class TerrainPlane {
             }
         }
 
-        // Índices (2 triángulos por celda, equivalente a Face4 del original)
+        // Índices (2 triángulos por celda)
         let ii = 0;
         for (let ix = 0; ix < resolution; ix++) {
             for (let iy = 0; iy < resolution; iy++) {
@@ -222,7 +221,7 @@ export class TerrainPlane {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    // Deformar un vértice (equivalente a displaceVertex del original)
+    // Deformar un vértice
     // ═══════════════════════════════════════════════════════════════════════
     displaceVertex(x, y, radius, height) {
 

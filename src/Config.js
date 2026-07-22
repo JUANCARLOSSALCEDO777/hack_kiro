@@ -1,6 +1,5 @@
 /**
  * Config.js — Configuración centralizada
- * Equivalente a: js/Config.js del proyecto original
  */
 
 export const Config = {

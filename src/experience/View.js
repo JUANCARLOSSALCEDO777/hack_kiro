@@ -1,6 +1,5 @@
 /**
  * View.js — Cámara, escena, niebla y post-procesado
- * Equivalente a: js/lights/experience/View.js
  * 
  * Pipeline de render:
  * 1. Renderizar escena principal (layer 0) a textura
@@ -85,7 +84,7 @@ export class View {
         const renderPass = new RenderPass(scene, camera);
         this.composer.addPass(renderPass);
 
-        // Pasada 2: Bloom (equivalente al blur aditivo del original)
+        // Pasada 2: Bloom
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         const bloomPass = new UnrealBloomPass(

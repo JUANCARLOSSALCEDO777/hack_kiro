@@ -33,7 +33,7 @@ export class ExperienceManager {
         this.lastTime = 0;
         this.running = false;
 
-        // Estado compartido entre subsistemas (equivalente al state global del main.js)
+        // Estado compartido entre subsistemas
         this.state = {
             time: 0,
             deltaTime: 0,

@@ -1,6 +1,5 @@
 /**
  * Player.js — Control de cámara en primera persona
- * Equivalente a: js/lights/experience/Player.js
  * 
  * La cámara avanza automáticamente sobre el terreno.
  * El mouse controla dirección (izq/der) e inclinación (arriba/abajo).

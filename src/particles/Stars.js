@@ -1,6 +1,5 @@
 /**
  * Stars.js — Partículas flotantes tipo luciérnaga sobre el terreno
- * Equivalente a: js/lights/experience/Stars.js
  * 
  * Pool de 24 partículas posicionadas sobre vértices visibles del terreno.
  * Cada partícula tiene un ciclo: spawn → fadeIn → hold → fadeOut → respawn.

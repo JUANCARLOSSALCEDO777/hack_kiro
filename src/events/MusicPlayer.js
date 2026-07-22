@@ -1,9 +1,7 @@
 /**
  * MusicPlayer.js — Reproducción y análisis de audio
- * Equivalente a: La lógica de audio en LIGHTS.Loader + LIGHTS.Music
  * 
- * Usa Web Audio API para obtener datos de frecuencia en tiempo real
- * (el original usaba datos pre-grabados en una imagen PNG).
+ * Usa Web Audio API para obtener datos de frecuencia en tiempo real.
  */
 
 export class MusicPlayer {

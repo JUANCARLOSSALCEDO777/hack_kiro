@@ -1,6 +1,5 @@
 /**
  * Terrain.js — Sistema de tiles infinito con culling
- * Equivalente a: js/lights/terrain/Terrain.js
  * 
  * Gestiona una cuadrícula 5×5 de tiles que se reposiciona
  * constantemente alrededor de la cámara. Los tiles detrás
@@ -27,10 +26,10 @@ export class Terrain {
         // Geometría compartida por todos los tiles
         this.terrainPlane = new TerrainPlane();
 
-        // Material del terreno — superficie sólida oscura
+        // Material del terreno — wireframe por defecto
         this.material = new THREE.MeshStandardMaterial({
-            color: 0x111122,
-            wireframe: false,
+            color: 0x14FF9D,
+            wireframe: true,
             metalness: 0.3,
             roughness: 0.7
         });
@@ -100,7 +99,7 @@ export class Terrain {
                     Math.abs(y - this.gridRadius)
                 ));
 
-                // Culling por ángulo (misma lógica que el original)
+                // Culling por ángulo
                 let tileVisible;
                 if (r > 1)
                     tileVisible = (cos * Math.cos(angle) + sin * Math.sin(angle)) < -0.5;

@@ -73,6 +73,12 @@ export class CanvasDraw implements AfterViewInit, OnDestroy {
   }
 
   onUserInteraction() {
+    // Activar pantalla completa
+    const el = this.containerRef.nativeElement.parentElement;
+    if (el?.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    }
+
     this.experience?.resumeAudio();
     this.showPlayPrompt = false;
   }

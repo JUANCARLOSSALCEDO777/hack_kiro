@@ -176,7 +176,7 @@ export class LuminousSpheres {
         this.terrain = terrain;
         this.colors = Config.colors;
         this.pulseScale = 1.0;
-        this.pattern = LIGHT_PATTERNS.WAVE_ROW;
+        this.pattern = LIGHT_PATTERNS.RADIAL_PULSE;
         this.flashBrightness = 0.08;
 
         const tileSize = Config.terrain.tileSize;
@@ -217,7 +217,7 @@ export class LuminousSpheres {
         // Uniforms
         this.uniforms = {
             uTime: { value: 0 },
-            uPattern: { value: 0 },
+            uPattern: { value: 2 },
             uFlashBrightness: { value: 0.08 },
             uRows: { value: ROWS },
             uCols: { value: COLS }
