@@ -50,11 +50,15 @@ export class View {
     constructor(renderManager) {
 
         this.renderer = renderManager.renderer;
+        this.container = renderManager.container;
+
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
 
         // Camera — ve layers 0 y 1
         this.camera = new THREE.PerspectiveCamera(
             Config.player.initialFov,
-            window.innerWidth / window.innerHeight,
+            w / h,
             1, 1600
         );
         this.camera.layers.enable(NO_BLOOM_LAYER);
@@ -69,8 +73,6 @@ export class View {
 
         // Post-processing
         this.setupPostprocessing();
-
-        window.addEventListener('resize', () => this.onResize());
     }
 
     setupPostprocessing() {
@@ -84,8 +86,10 @@ export class View {
         this.composer.addPass(renderPass);
 
         // Pasada 2: Bloom (equivalente al blur aditivo del original)
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
         const bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            new THREE.Vector2(w, h),
             1.5,    // strength — intensidad del glow
             0.4,    // radius — dispersión del glow
             0.4     // threshold — bajo para que esferas y partículas brillen
@@ -118,8 +122,8 @@ export class View {
     }
 
     onResize() {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
 
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
