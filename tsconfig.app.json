@@ -3,10 +3,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "outDir": "./dist/out-tsc",
+    "allowJs": true,
+    "checkJs": false,
     "types": []
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.js"
   ],
   "exclude": [
     "src/**/*.spec.ts"
