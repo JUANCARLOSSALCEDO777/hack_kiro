@@ -66,4 +66,18 @@ export class MusicPlayer {
     get time() {
         return this.audio.currentTime;
     }
+
+    /**
+     * Libera recursos de audio: detiene reproducción, limpia fuente
+     * y cierra el AudioContext para evitar fugas de memoria.
+     */
+    dispose() {
+        this.audio.pause();
+        this.audio.src = '';
+        this.playing = false;
+
+        if (this.audioContext.state !== 'closed') {
+            this.audioContext.close();
+        }
+    }
 }

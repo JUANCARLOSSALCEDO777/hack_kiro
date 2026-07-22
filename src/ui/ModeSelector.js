@@ -12,11 +12,12 @@ import { LIGHT_PATTERNS } from '../particles/LuminousSpheres.js';
 
 export class ModeSelector {
 
-    constructor(beatEvents, terrain, spheres) {
+    constructor(beatEvents, terrain, spheres, uiContainer) {
 
         this.beatEvents = beatEvents;
         this.terrain = terrain;
         this.spheres = spheres;
+        this.uiContainer = uiContainer;
 
         // Contenedor
         this.container = document.createElement('div');
@@ -47,7 +48,7 @@ export class ModeSelector {
             terrain.terrainPlane._rotationEnabled = enabled;
         });
 
-        document.body.appendChild(this.container);
+        this.uiContainer.appendChild(this.container);
 
         // ─── Selector de patrones de luz ───
         this.patternContainer = document.createElement('div');
@@ -71,7 +72,7 @@ export class ModeSelector {
         this.createPatternButton('CHECK', LIGHT_PATTERNS.CHECKER);
         this.createPatternButton('OFF', LIGHT_PATTERNS.OFF);
 
-        document.body.appendChild(this.patternContainer);
+        this.uiContainer.appendChild(this.patternContainer);
         this.updatePatternActive();
 
         // ─── Selector de textura del terreno ───
@@ -91,7 +92,7 @@ export class ModeSelector {
         this.createTextureButton('SOLID', 'solid');
         this.createTextureButton('WIRE♪', 'wireframe');
 
-        document.body.appendChild(this.textureContainer);
+        this.uiContainer.appendChild(this.textureContainer);
         this.updateTextureActive();
 
         // Panel de bandas (debajo de los botones)
@@ -206,8 +207,8 @@ export class ModeSelector {
 
     createBandPanel(terrain) {
 
-        const panel = document.createElement('div');
-        panel.style.cssText = `
+        this.bandPanel = document.createElement('div');
+        this.bandPanel.style.cssText = `
             position: fixed;
             top: 50px;
             left: 16px;
@@ -225,17 +226,17 @@ export class ModeSelector {
         terrain.terrainPlane._bandGains = defaultGains.slice();
 
         // Sliders de Attack y Decay
-        this.createSliderRow(panel, 'ATK', 68, 0.68, (val) => {
+        this.createSliderRow(this.bandPanel, 'ATK', 68, 0.68, (val) => {
             terrain.terrainPlane._attackSpeed = val;
         });
-        this.createSliderRow(panel, 'DCY', 1, 0.01, (val) => {
+        this.createSliderRow(this.bandPanel, 'DCY', 1, 0.01, (val) => {
             terrain.terrainPlane._decaySpeed = val;
         });
 
         // Separador
         const sep = document.createElement('div');
         sep.style.cssText = 'height: 1px; background: #14FF9D33; margin: 4px 0;';
-        panel.appendChild(sep);
+        this.bandPanel.appendChild(sep);
 
         for (let i = 0; i < 8; i++) {
             const row = document.createElement('div');
@@ -266,10 +267,10 @@ export class ModeSelector {
             row.appendChild(label);
             row.appendChild(slider);
             row.appendChild(valueLabel);
-            panel.appendChild(row);
+            this.bandPanel.appendChild(row);
         }
 
-        document.body.appendChild(panel);
+        this.uiContainer.appendChild(this.bandPanel);
     }
 
     updateActive() {
@@ -366,5 +367,13 @@ export class ModeSelector {
                 btn.style.color = '#14D4FF';
             }
         }
+    }
+
+    /** Remueve todos los elementos DOM creados por este selector */
+    dispose() {
+        this.container.remove();
+        this.patternContainer.remove();
+        this.textureContainer.remove();
+        this.bandPanel.remove();
     }
 }

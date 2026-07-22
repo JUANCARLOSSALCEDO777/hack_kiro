@@ -55,24 +55,42 @@ export class Player {
         const halfW = () => window.innerWidth / 2;
         const halfH = () => window.innerHeight / 2;
 
-        window.addEventListener('mousemove', (e) => {
+        // Almacenar referencias para poder removerlos en dispose()
+        this._onMouseMove = (e) => {
             // Normalizado: -1 a +1 desde el centro
             this.mouseX = (e.clientX - halfW()) / halfW();
             this.mouseY = (e.clientY - halfH()) / halfH();
-        });
+        };
 
-        window.addEventListener('mousedown', () => { this.mouseDown = true; });
-        window.addEventListener('mouseup', () => { this.mouseDown = false; });
+        this._onMouseDown = () => { this.mouseDown = true; };
+        this._onMouseUp = () => { this.mouseDown = false; };
 
         // Touch
-        window.addEventListener('touchmove', (e) => {
+        this._onTouchMove = (e) => {
             const touch = e.touches[0];
             this.mouseX = (touch.clientX - halfW()) / halfW();
             this.mouseY = (touch.clientY - halfH()) / halfH();
-        });
+        };
 
-        window.addEventListener('touchstart', () => { this.mouseDown = true; });
-        window.addEventListener('touchend', () => { this.mouseDown = false; });
+        this._onTouchStart = () => { this.mouseDown = true; };
+        this._onTouchEnd = () => { this.mouseDown = false; };
+
+        // Registrar handlers
+        window.addEventListener('mousemove', this._onMouseMove);
+        window.addEventListener('mousedown', this._onMouseDown);
+        window.addEventListener('mouseup', this._onMouseUp);
+        window.addEventListener('touchmove', this._onTouchMove);
+        window.addEventListener('touchstart', this._onTouchStart);
+        window.addEventListener('touchend', this._onTouchEnd);
+    }
+
+    dispose() {
+        window.removeEventListener('mousemove', this._onMouseMove);
+        window.removeEventListener('mousedown', this._onMouseDown);
+        window.removeEventListener('mouseup', this._onMouseUp);
+        window.removeEventListener('touchmove', this._onTouchMove);
+        window.removeEventListener('touchstart', this._onTouchStart);
+        window.removeEventListener('touchend', this._onTouchEnd);
     }
 
     update(state) {
