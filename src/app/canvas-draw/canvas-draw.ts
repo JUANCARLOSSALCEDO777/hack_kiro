@@ -5,6 +5,7 @@ import {
   AfterViewInit,
   OnDestroy,
   NgZone,
+  ViewEncapsulation,
   inject,
 } from '@angular/core';
 import { ExperienceManager } from '../../ExperienceManager.js';
@@ -13,8 +14,9 @@ import { ExperienceManager } from '../../ExperienceManager.js';
   selector: 'app-canvas-draw',
   imports: [],
   templateUrl: './canvas-draw.html',
+  encapsulation: ViewEncapsulation.None,
   styles: `
-    :host {
+    app-canvas-draw {
       display: block;
       width: 100vw;
       height: 100vh;
@@ -32,9 +34,7 @@ import { ExperienceManager } from '../../ExperienceManager.js';
       width: 100%;
       height: 100%;
       pointer-events: none;
-    }
-    .ui-container > * {
-      pointer-events: auto;
+      z-index: 1;
     }
     .play-prompt {
       position: absolute;

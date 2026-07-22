@@ -22,7 +22,7 @@ export class ModeSelector {
         // Contenedor
         this.container = document.createElement('div');
         this.container.style.cssText = `
-            position: fixed;
+            position: absolute;
             top: 16px;
             left: 16px;
             z-index: 1000;
@@ -30,6 +30,7 @@ export class ModeSelector {
             gap: 8px;
             font-family: monospace;
             font-size: 12px;
+            pointer-events: auto;
         `;
 
         // Crear botones de modo
@@ -53,7 +54,7 @@ export class ModeSelector {
         // ─── Selector de patrones de luz ───
         this.patternContainer = document.createElement('div');
         this.patternContainer.style.cssText = `
-            position: fixed;
+            position: absolute;
             top: 16px;
             right: 16px;
             z-index: 1000;
@@ -61,6 +62,7 @@ export class ModeSelector {
             gap: 6px;
             font-family: monospace;
             font-size: 11px;
+            pointer-events: auto;
         `;
 
         this.patternButtons = {};
@@ -78,7 +80,7 @@ export class ModeSelector {
         // ─── Selector de textura del terreno ───
         this.textureContainer = document.createElement('div');
         this.textureContainer.style.cssText = `
-            position: fixed;
+            position: absolute;
             top: 46px;
             right: 16px;
             z-index: 1000;
@@ -86,6 +88,7 @@ export class ModeSelector {
             gap: 6px;
             font-family: monospace;
             font-size: 11px;
+            pointer-events: auto;
         `;
 
         this.textureButtons = {};
@@ -209,7 +212,7 @@ export class ModeSelector {
 
         this.bandPanel = document.createElement('div');
         this.bandPanel.style.cssText = `
-            position: fixed;
+            position: absolute;
             top: 50px;
             left: 16px;
             z-index: 1000;
@@ -219,6 +222,7 @@ export class ModeSelector {
             font-family: monospace;
             font-size: 11px;
             color: #14FF9D;
+            pointer-events: auto;
         `;
 
         // Inicializar gains por defecto
