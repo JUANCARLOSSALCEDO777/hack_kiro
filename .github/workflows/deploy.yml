@@ -2,15 +2,13 @@ name: Deploy a GitHub Pages
 
 on:
   push:
-    branches: [main, juan]
+    branches: [main]
 
-# Permisos para desplegar a Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Solo un deploy a la vez
 concurrency:
   group: "pages"
   cancel-in-progress: true
