@@ -9,6 +9,8 @@ import {
 
 import { config } from "./config";
 import { messageHandler } from "./src/modules/messageHandler";
+import { discordToWs } from "./src/modules/discordToWs";
+import { DEFAULT_SUPPORTED_CHARS } from "./src/modules/sanitizer";
 
 const client = new Client({
   allowedMentions : {
@@ -44,6 +46,20 @@ client.once(Events.ClientReady, ( event : Client<boolean> ) => {
   client.user?.setActivity("gente maravillosa", { type: ActivityType.Watching } );
 
   messageHandler( { client : client } );
+
+  // Pipeline Discord → WebSocket 3D: reenvía mensajes del canal designado a la experiencia 3D
+  discordToWs({
+    client,
+    wsApiEndpoint: config.wsApiEndpoint,
+    channelId: config.wsChannelId,
+    rateLimitConfig: {
+      maxTokens: config.rateLimitMax,
+      refillRate: config.rateLimitMax / (config.rateLimitWindowMs / 1000),
+      windowMs: config.rateLimitWindowMs,
+    },
+    maxMessageLength: config.maxMessageLength,
+    supportedChars: DEFAULT_SUPPORTED_CHARS,
+  });
 
   console.log(`Listo! Loggeado como ${ event.user?.tag } en ambiente ${ config.enviroment }`);
 
