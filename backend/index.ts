@@ -44,7 +44,7 @@ client.once(Events.ClientReady, ( event : Client<boolean> ) => {
 
   // En DEV usar WebSocket local directo; en PROD usar API Gateway Management API
   const localSender = config.enviroment !== 'PROD'
-    ? new LocalWsSender({ port: 4200 })
+    ? new LocalWsSender({ port: 4201 })
     : undefined;
 
   // Pipeline Discord → WebSocket 3D: reenvía mensajes del canal designado a la experiencia 3D

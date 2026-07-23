@@ -12,7 +12,7 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 
-const PORT = 4200;
+const PORT = 4201;
 const wss = new WebSocketServer({ port: PORT });
 
 console.log(`[dev-ws-server] Servidor WebSocket local activo en ws://localhost:${PORT}`);
