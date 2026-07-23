@@ -2,8 +2,6 @@ import {
   Client,
   Events,
   GatewayIntentBits,
-  AllowedMentionsTypes,
-  ActivityType,
   Partials
 } from "discord.js";
 
@@ -14,11 +12,7 @@ import { DEFAULT_SUPPORTED_CHARS } from "./src/modules/sanitizer";
 
 const client = new Client({
   allowedMentions : {
-    parse: [
-      AllowedMentionsTypes.User,
-      AllowedMentionsTypes.Role,
-      AllowedMentionsTypes.Everyone
-    ],
+    parse: ['users', 'roles', 'everyone'],
     repliedUser: true
   },
   intents: [
@@ -43,7 +37,7 @@ const client = new Client({
 
 client.once(Events.ClientReady, ( event : Client<boolean> ) => {
 
-  client.user?.setActivity("gente maravillosa", { type: ActivityType.Watching } );
+  client.user?.setActivity("gente maravillosa", { type: 3 } ); // 3 = Watching
 
   messageHandler( { client : client } );
 
