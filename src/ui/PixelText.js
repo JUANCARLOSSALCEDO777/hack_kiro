@@ -42,7 +42,7 @@ export class PixelText {
     async loadFont() {
         const textureLoader = new THREE.TextureLoader();
         const rawTexture = await new Promise((resolve) => {
-            textureLoader.load('/fonts/pixel-font-atlas.png', (tex) => {
+            textureLoader.load('fonts/pixel-font-atlas.png', (tex) => {
                 resolve(tex);
             });
         });
@@ -50,7 +50,7 @@ export class PixelText {
         // Procesar textura: convertir píxeles negros/oscuros en transparentes
         this.fontTexture = this.makeBlackTransparent(rawTexture);
 
-        const response = await fetch('/fonts/pixel-font-atlas.fnt');
+        const response = await fetch('fonts/pixel-font-atlas.fnt');
         const text = await response.text();
         this.fontData = this.parseBMFont(text);
         this.ready = true;
