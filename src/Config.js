@@ -39,5 +39,16 @@ export const Config = {
     // _______________________________________________________________________________________ Colors
 
     colors: [0xFF1561, 0xFFF014, 0x14FF9D, 0x14D4FF, 0xFF9D14],
-    hues: [341 / 360, 56 / 360, 155 / 360, 191 / 360, 35 / 360]
+    hues: [341 / 360, 56 / 360, 155 / 360, 191 / 360, 35 / 360],
+
+    // _______________________________________________________________________________________ WebSocket
+
+    websocket: {
+        endpoint: 'wss://xxxxxx.execute-api.us-east-1.amazonaws.com/prod',
+        reconnect: {
+            initialDelay: 1000,
+            maxDelay: 30000,
+            multiplier: 2
+        }
+    }
 };
