@@ -44,7 +44,11 @@ export const Config = {
     // _______________________________________________________________________________________ WebSocket
 
     websocket: {
-        endpoint: 'wss://xxxxxx.execute-api.us-east-1.amazonaws.com/prod',
+        // En desarrollo local (localhost) conecta al WS server del bot.
+        // En producción usa el API Gateway WSS desplegado en AWS.
+        endpoint: typeof window !== 'undefined' && window.location.hostname === 'localhost'
+            ? 'ws://localhost:4200'
+            : 'wss://xxxxxx.execute-api.us-east-1.amazonaws.com/prod',
         reconnect: {
             initialDelay: 1000,
             maxDelay: 30000,

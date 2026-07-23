@@ -9,6 +9,7 @@ import { config } from "./config";
 import { messageHandler } from "./src/modules/messageHandler";
 import { discordToWs } from "./src/modules/discordToWs";
 import { DEFAULT_SUPPORTED_CHARS } from "./src/modules/sanitizer";
+import { LocalWsSender } from "./src/modules/localWsSender";
 
 const client = new Client({
   allowedMentions : {
@@ -41,6 +42,11 @@ client.once(Events.ClientReady, ( event : Client<boolean> ) => {
 
   messageHandler( { client : client } );
 
+  // En DEV usar WebSocket local directo; en PROD usar API Gateway Management API
+  const localSender = config.enviroment !== 'PROD'
+    ? new LocalWsSender({ port: 4200 })
+    : undefined;
+
   // Pipeline Discord → WebSocket 3D: reenvía mensajes del canal designado a la experiencia 3D
   discordToWs({
     client,
@@ -53,6 +59,7 @@ client.once(Events.ClientReady, ( event : Client<boolean> ) => {
     },
     maxMessageLength: config.maxMessageLength,
     supportedChars: DEFAULT_SUPPORTED_CHARS,
+    sender: localSender,
   });
 
   console.log(`Listo! Loggeado como ${ event.user?.tag } en ambiente ${ config.enviroment }`);

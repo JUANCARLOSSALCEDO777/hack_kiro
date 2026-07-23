@@ -12,6 +12,14 @@ import { RateLimiter, RateLimitConfig } from './rateLimiter';
 import { AiFilterHook, passthroughFilter } from './aiFilterHook';
 import { WsSender, MessagePayload } from './wsSender';
 
+/**
+ * Interfaz genérica de sender — permite intercambiar entre WsSender (AWS)
+ * y LocalWsSender (desarrollo) sin cambiar el pipeline.
+ */
+export interface BroadcastSender {
+  broadcast(payload: MessagePayload): Promise<void>;
+}
+
 export interface DiscordToWsOptions {
   client: Client;
   wsApiEndpoint: string;
@@ -20,6 +28,8 @@ export interface DiscordToWsOptions {
   aiFilterHook?: AiFilterHook;
   maxMessageLength: number;
   supportedChars: Set<number>;
+  /** Sender inyectable — si no se pasa, se usa WsSender (producción) */
+  sender?: BroadcastSender | undefined;
 }
 
 /**
@@ -35,10 +45,14 @@ export function discordToWs(options: DiscordToWsOptions): void {
     aiFilterHook = passthroughFilter,
     maxMessageLength,
     supportedChars,
+    sender,
   } = options;
 
   const rateLimiter = new RateLimiter(rateLimitConfig);
-  const wsSender = new WsSender({ apiEndpoint: wsApiEndpoint });
+
+  // Si se inyecta un sender externo (LocalWsSender en DEV), usarlo.
+  // Si no, crear el WsSender de producción (API Gateway Management API).
+  const wsSender: BroadcastSender = sender ?? new WsSender({ apiEndpoint: wsApiEndpoint });
 
   const sanitizerConfig: SanitizerConfig = {
     maxLength: maxMessageLength,
