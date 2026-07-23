@@ -1,0 +1,22 @@
+{
+  "name": "hackaton_kiro_aws_back_discord",
+  "version": "1.0.0",
+  "description": "Bot de Discord para hackaton Kiro AWS",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node index.js",
+    "dev": "tsx index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "@types/node": "^26.1.1",
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
+  }
+}
