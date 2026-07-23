@@ -41,7 +41,7 @@ export class DebugModeManager {
 
     /** Maneja keydown filtrando inputs con foco y teclas que no son backtick */
     _handleKeydown(event) {
-        if (event.key !== '`') return;
+        if (event.key !== 'd' && event.key !== 'D') return;
 
         const tag = event.target.tagName;
         // Protección: no togglear si el foco está en un campo editable
