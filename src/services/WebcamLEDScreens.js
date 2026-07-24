@@ -216,9 +216,8 @@ export class WebcamLEDScreens {
         // Radio del punto LED en cada celda
         const radius = (cellWidth * dotRadiusRatio) / 2;
 
-        // Fondo oscuro (simula espacio inter-LED)
-        ledCtx.fillStyle = '#000000';
-        ledCtx.fillRect(0, 0, ledW, ledH);
+        // Fondo transparente (permite ver a través de las zonas sin dots)
+        ledCtx.clearRect(0, 0, ledW, ledH);
 
         // Obtener imageData del sourceCanvas completo (una sola vez por performance)
         const srcCtx = sourceCanvas.getContext('2d');
@@ -231,9 +230,22 @@ export class WebcamLEDScreens {
         const srcCellW = srcW / gridWidth;
         const srcCellH = srcH / gridHeight;
 
+        // Intensidad de la viñeta elíptica
+        const vignetteIntensity = this._config.vignetteIntensity;
+
         // Recorrer cada celda del grid
         for (let row = 0; row < gridHeight; row++) {
             for (let col = 0; col < gridWidth; col++) {
+
+                // Test de elipse: si el punto está fuera, no dibujarlo
+                const nx = (col / (gridWidth - 1)) * 2 - 1;   // -1 a 1
+                const ny = (row / (gridHeight - 1)) * 2 - 1;  // -1 a 1
+                const ellipseDist = nx * nx + ny * ny;
+
+                // Fade gradual en los bordes de la elipse
+                const alpha = Math.max(0, 1 - ellipseDist * vignetteIntensity);
+                if (alpha <= 0) continue; // Fuera de la elipse — no dibujar
+
                 // Región correspondiente en el sourceCanvas
                 const srcX = Math.floor(col * srcCellW);
                 const srcY = Math.floor(row * srcCellH);
@@ -264,13 +276,17 @@ export class WebcamLEDScreens {
                 const cx = col * cellWidth + cellWidth / 2;
                 const cy = row * cellHeight + cellHeight / 2;
 
-                // Dibujar el punto circular con el color muestreado
+                // Dibujar el punto con alpha de viñeta (transparencia real)
                 ledCtx.beginPath();
                 ledCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ledCtx.globalAlpha = alpha;
                 ledCtx.fillStyle = `rgb(${r},${g},${b})`;
                 ledCtx.fill();
             }
         }
+
+        // Restaurar alpha global
+        ledCtx.globalAlpha = 1;
 
         return ledCanvas;
     }

@@ -142,6 +142,7 @@ export class ExperienceManager {
         wcFolder.add(wcConfig, 'gridHeight', 9, 72).step(1).name('Grid rows');
         wcFolder.add(wcConfig, 'dotRadiusRatio', 0.3, 1.0).name('Dot radius');
         wcFolder.add(wcConfig, 'frameInterval', 500, 5000).name('Frame interval');
+        wcFolder.add(wcConfig, 'vignetteIntensity', 0.0, 2.0).name('Viñeta intensidad');
 
         // ─── Toggles de control ─────────────────────────────────────────────────
 
@@ -153,20 +154,72 @@ export class ExperienceManager {
         const playerFolder = this.modeSelector.gui.addFolder('Player Camera');
         const player = this.player;
 
-        playerFolder.add(player, 'velocity', 50, 500).name('Velocidad');
-        playerFolder.add(player, 'altitude', 20, 300).name('Altitud');
-        playerFolder.add(player, 'targetDistance', 50, 500).name('Target dist');
-        playerFolder.add(player.camera, 'fov', 10, 120).name('FOV').onChange(() => {
+        const velCtrl = playerFolder.add(player, 'velocity', 50, 500).name('Velocidad');
+        const altCtrl = playerFolder.add(player, 'altitude', 20, 300).name('Altitud');
+        const tdCtrl = playerFolder.add(player, 'targetDistance', 50, 500).name('Target dist');
+        const fovCtrl = playerFolder.add(player.camera, 'fov', 10, 120).name('FOV').onChange(() => {
             player.camera.updateProjectionMatrix();
         });
+
+        // ─── Modo cinematográfico cíclico ────────────────────────────────────────
+
+        // Valores entre los que oscila la cámara
+        const cinDefault = { velocity: 150, altitude: 60, targetDistance: 150, fov: 30 };
+        const cinPreset = { velocity: 107.15, altitude: 83.28, targetDistance: 157.1, fov: 63.24 };
+
+        // Estado del modo cinematográfico
+        this._cinematicMode = false;
+        this._cinematicTime = 0;
+
+        // Períodos diferentes por parámetro (más orgánico)
+        const cinPeriods = { velocity: 12, altitude: 18, targetDistance: 15, fov: 10 };
+
+        // Función de actualización cinematográfica (llamada desde animate)
+        this._updateCinematic = (dt) => {
+            if (!this._cinematicMode) return;
+            this._cinematicTime += dt;
+
+            const t = this._cinematicTime;
+
+            // Cada parámetro oscila con su propio período usando sin suavizado
+            const lerp = (a, b, factor) => a + (b - a) * factor;
+            const smoothOsc = (period) => (Math.sin(t * Math.PI * 2 / period) + 1) * 0.5;
+
+            player.velocity = lerp(cinDefault.velocity, cinPreset.velocity, smoothOsc(cinPeriods.velocity));
+            player.altitude = lerp(cinDefault.altitude, cinPreset.altitude, smoothOsc(cinPeriods.altitude));
+            player.targetDistance = lerp(cinDefault.targetDistance, cinPreset.targetDistance, smoothOsc(cinPeriods.targetDistance));
+            player.camera.fov = lerp(cinDefault.fov, cinPreset.fov, smoothOsc(cinPeriods.fov));
+            player.camera.updateProjectionMatrix();
+
+            // Actualizar GUI sliders
+            velCtrl.updateDisplay();
+            altCtrl.updateDisplay();
+            tdCtrl.updateDisplay();
+            fovCtrl.updateDisplay();
+        };
+
+        // Toggle en la GUI
+        playerFolder.add(this, '_cinematicMode').name('Modo cinemático');
+
+        // Preset manual (aplica valores cinematic fijos)
+        playerFolder.add({ apply: () => {
+            player.velocity = cinPreset.velocity;
+            player.altitude = cinPreset.altitude;
+            player.targetDistance = cinPreset.targetDistance;
+            player.camera.fov = cinPreset.fov;
+            player.camera.updateProjectionMatrix();
+            velCtrl.updateDisplay();
+            altCtrl.updateDisplay();
+            tdCtrl.updateDisplay();
+            fovCtrl.updateDisplay();
+        }}, 'apply').name('Preset cinematic');
+
+        // ─── Controles de texto 3D ──────────────────────────────────────────────
 
         // ─── Controles de texto 3D ──────────────────────────────────────────────
 
         const textFolder = this.modeSelector.gui.addFolder('Text Mode');
         const textModes = { mode: this.pixelText.mode };
-        textFolder.add(textModes, 'mode', ['pixel', 'particles'])
-            .name('Renderer')
-            .onChange(v => { this.pixelText.setMode(v); });
 
         // Sub-controles para el modo particles
         const particleRenderer = this.pixelText._renderers.particles;
@@ -177,6 +230,19 @@ export class ExperienceManager {
         pFolder.add(particleRenderer, 'planeScale', 1.0, 6.0).name('Escala');
         pFolder.add(particleRenderer, 'pointSize', 1.0, 12.0).name('Tamaño punto');
         pFolder.add(particleRenderer, 'turbulenceAmount', 0.0, 10.0).name('Turbulencia');
+
+        // Mostrar/ocultar sub-folder según el modo seleccionado
+        const updatePFolderVisibility = (mode) => {
+            pFolder.domElement.style.display = mode === 'particles' ? '' : 'none';
+        };
+        updatePFolderVisibility(textModes.mode);
+
+        textFolder.add(textModes, 'mode', ['pixel', 'particles'])
+            .name('Renderer')
+            .onChange(v => {
+                this.pixelText.setMode(v);
+                updatePFolderVisibility(v);
+            });
     }
 
     /** Inicia la reproducción de audio y el loop de animación */
@@ -224,6 +290,9 @@ export class ExperienceManager {
 
             // Webcam LED Screens — captura periódica y seguimiento de jugador
             this.webcamScreens.update(this.state);
+
+            // Modo cinematográfico — oscila parámetros de cámara
+            if (this._updateCinematic) this._updateCinematic(dt);
 
             // Render
             this.view.render();

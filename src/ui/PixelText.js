@@ -36,7 +36,7 @@ export class PixelText {
         this.timeSinceLastSpawn = SPAWN_INTERVAL;
 
         // Modo de renderizado actual
-        this.mode = 'pixel';
+        this.mode = 'particles';
         this._renderers = {};
 
         // Instanciar todos los renderers (lazy: solo el activo se usa)

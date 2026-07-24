@@ -53,7 +53,8 @@ export const Config = {
         screenRadius: 1000,      // Distancia de las pantallas al centro
         screenWidth: 300,        // Ancho de cada pantalla (unidades 3D)
         screenHeight: 170,       // Alto de cada pantalla
-        screenAltitude: 140.9    // Altura Y de las pantallas
+        screenAltitude: 140.9,   // Altura Y de las pantallas
+        vignetteIntensity: 0.3   // Intensidad de fade en esquinas (0 = sin viñeta, 1+ = agresivo)
     },
 
     // _______________________________________________________________________________________ WebSocket

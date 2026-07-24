@@ -11,9 +11,9 @@
 
 import * as THREE from 'three';
 
-const CANVAS_WIDTH = 256;
+const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 64;
-const FONT_SIZE = 48;
+const FONT_SIZE = 40;
 const SPREAD_RADIUS = 200;
 const ASSEMBLE_DURATION = 1.5;  // Segundos para ensamblarse
 const PLANE_SCALE = 2.5;       // Escala del grupo final
@@ -102,12 +102,12 @@ export class ParticleFontRenderer {
         this._colorIndex = 0;
 
         // Parámetros expuestos para GUI debug
-        this.particleCount = 1500;
-        this.spreadRadius = SPREAD_RADIUS;
-        this.assembleDuration = ASSEMBLE_DURATION;
-        this.planeScale = PLANE_SCALE;
-        this.pointSize = 4.0;
-        this.turbulenceAmount = 2.0;
+        this.particleCount = 2500;
+        this.spreadRadius = 118.4;
+        this.assembleDuration = 1.7476;
+        this.planeScale = 1.0;
+        this.pointSize = 12.0;
+        this.turbulenceAmount = 1.52;
     }
 
     /**
