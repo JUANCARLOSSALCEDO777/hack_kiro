@@ -1,36 +1,46 @@
 // Handler Lambda para gestión de conexiones WebSocket (API Gateway)
-// Los connection IDs se almacenan en memoria — persisten mientras el Lambda esté "caliente"
-// LIMITANTE: Si AWS crea múltiples instancias Lambda ante picos de tráfico,
-// los clientes registrados en una instancia no recibirán mensajes enviados a otra.
-// Para un hackathon con pocos usuarios concurrentes (~20-30) funciona bien.
+// Connection IDs almacenados en DynamoDB — compartido entre todas las instancias.
+// Garantiza broadcast confiable sin importar cuántas instancias Lambda existan.
 
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require('@aws-sdk/client-apigatewaymanagementapi');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, DeleteCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 
-const connections = new Set();
+const TABLE_NAME = process.env.CONNECTIONS_TABLE;
+const ddbClient = new DynamoDBClient({});
+const ddb = DynamoDBDocumentClient.from(ddbClient);
 
 exports.handler = async (event) => {
   const { connectionId, routeKey, domainName, stage } = event.requestContext;
 
-  console.log(`[Lambda] Route: ${routeKey}, ConnectionId: ${connectionId}, Total: ${connections.size}`);
-
   switch (routeKey) {
     case '$connect':
-      connections.add(connectionId);
+      await ddb.send(new PutCommand({
+        TableName: TABLE_NAME,
+        Item: { connectionId },
+      }));
       break;
 
     case '$disconnect':
-      connections.delete(connectionId);
+      await ddb.send(new DeleteCommand({
+        TableName: TABLE_NAME,
+        Key: { connectionId },
+      }));
       break;
 
     case 'sendMessage': {
-      // El bot envía un mensaje — broadcast a todos los clientes excepto el emisor
+      // Obtener TODOS los connectionIds de DynamoDB
+      const result = await ddb.send(new ScanCommand({ TableName: TABLE_NAME }));
+      const connections = result.Items || [];
+
       const endpoint = `https://${domainName}/${stage}`;
       const client = new ApiGatewayManagementApiClient({ endpoint });
       const payload = event.body;
 
-      const staleConnections = [];
+      const staleIds = [];
 
-      for (const id of connections) {
+      for (const { connectionId: id } of connections) {
+        // No reenviar al emisor (el bot)
         if (id === connectionId) continue;
 
         try {
@@ -39,14 +49,19 @@ exports.handler = async (event) => {
             Data: payload,
           }));
         } catch (err) {
+          // 410 Gone = conexión ya no existe, limpiar
           if (err.$metadata?.httpStatusCode === 410) {
-            staleConnections.push(id);
+            staleIds.push(id);
           }
         }
       }
 
-      for (const id of staleConnections) {
-        connections.delete(id);
+      // Limpiar conexiones stale de DynamoDB
+      for (const id of staleIds) {
+        await ddb.send(new DeleteCommand({
+          TableName: TABLE_NAME,
+          Key: { connectionId: id },
+        }));
       }
 
       break;

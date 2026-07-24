@@ -1,8 +1,10 @@
 {
   "name": "discord-3d-lambda",
   "version": "1.0.0",
-  "description": "Lambda handler para WebSocket connections y broadcast",
+  "description": "Lambda handler para WebSocket connections y broadcast via DynamoDB",
   "dependencies": {
-    "@aws-sdk/client-apigatewaymanagementapi": "^3.1094.0"
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.1094.0",
+    "@aws-sdk/client-dynamodb": "^3.1094.0",
+    "@aws-sdk/lib-dynamodb": "^3.1094.0"
   }
 }
