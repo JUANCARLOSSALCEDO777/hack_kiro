@@ -109,30 +109,19 @@ export class ExperienceManager {
         wcFolder.add(wcConfig, 'screenRadius', 200, 1000).name('Radio').onChange(v => {
             wcScreens._screens.forEach((screen, i) => {
                 const angle = (i / wcConfig.screenCount) * Math.PI * 2;
-                screen.mesh.position.x = Math.cos(angle) * v;
-                screen.mesh.position.z = Math.sin(angle) * v;
-                screen.mesh.lookAt(0, wcConfig.screenAltitude, 0);
+                screen.points.position.x = Math.cos(angle) * v;
+                screen.points.position.z = Math.sin(angle) * v;
+                screen.points.lookAt(0, wcConfig.screenAltitude, 0);
             });
         });
 
-        wcFolder.add(wcConfig, 'screenWidth', 100, 600).name('Ancho').onChange(v => {
-            wcScreens._screens.forEach(screen => {
-                screen.mesh.geometry.dispose();
-                screen.mesh.geometry = new THREE.PlaneGeometry(v, wcConfig.screenHeight);
-            });
-        });
-
-        wcFolder.add(wcConfig, 'screenHeight', 50, 400).name('Alto').onChange(v => {
-            wcScreens._screens.forEach(screen => {
-                screen.mesh.geometry.dispose();
-                screen.mesh.geometry = new THREE.PlaneGeometry(wcConfig.screenWidth, v);
-            });
-        });
+        wcFolder.add(wcConfig, 'screenWidth', 100, 600).name('Ancho');
+        wcFolder.add(wcConfig, 'screenHeight', 50, 400).name('Alto');
 
         wcFolder.add(wcConfig, 'screenAltitude', -100, 200).name('Altitud').onChange(v => {
             wcScreens._screens.forEach((screen) => {
-                screen.mesh.position.y = v;
-                screen.mesh.lookAt(0, v, 0);
+                screen.points.position.y = v;
+                screen.points.lookAt(0, v, 0);
             });
         });
 
@@ -143,6 +132,18 @@ export class ExperienceManager {
         wcFolder.add(wcConfig, 'dotRadiusRatio', 0.3, 1.0).name('Dot radius');
         wcFolder.add(wcConfig, 'frameInterval', 500, 5000).name('Frame interval');
         wcFolder.add(wcConfig, 'vignetteIntensity', 0.0, 2.0).name('Viñeta intensidad');
+
+        // Controles de partículas para debug
+        wcFolder.add(wcScreens, '_cycleDuration', 3, 15).name('Ciclo (s)');
+        wcFolder.add(wcScreens, '_assembleDuration', 0.5, 5).name('Ensamblaje (s)');
+        const pointSizeCtrl = { value: 41.0 };
+        wcFolder.add(pointSizeCtrl, 'value', 1, 80).name('Point size').onChange(v => {
+            wcScreens._screens.forEach(s => { s.material.uniforms.uPointSize.value = v; });
+        });
+
+        // Patrón de animación de generación
+        wcFolder.add(wcScreens, 'patternMode', ['rings', 'vortex', 'flower', 'helix', 'starburst', 'diamond', 'tunnel', 'galaxy', 'spiral', 'wave', 'explosion'])
+            .name('Patrón anim.');
 
         // ─── Toggles de control ─────────────────────────────────────────────────
 
