@@ -41,6 +41,22 @@ export const Config = {
     colors: [0xFF1561, 0xFFF014, 0x14FF9D, 0x14D4FF, 0xFF9D14],
     hues: [341 / 360, 56 / 360, 155 / 360, 191 / 360, 35 / 360],
 
+    // _______________________________________________________________________________________ Webcam LED Screens
+
+    webcam: {
+        enabled: true,
+        frameInterval: 1017.5,   // ms entre capturas
+        gridWidth: 64,           // Columnas del dot-grid
+        gridHeight: 36,          // Filas del dot-grid
+        dotRadiusRatio: 0.7417,  // Radio del punto relativo a celda (0-1)
+        screenCount: 8,          // Número de pantallas alrededor
+        screenRadius: 1000,      // Distancia de las pantallas al centro
+        screenWidth: 300,        // Ancho de cada pantalla (unidades 3D)
+        screenHeight: 170,       // Alto de cada pantalla
+        screenAltitude: 140.9,   // Altura Y de las pantallas
+        vignetteIntensity: 0.3   // Intensidad de fade en esquinas (0 = sin viñeta, 1+ = agresivo)
+    },
+
     // _______________________________________________________________________________________ WebSocket
 
     websocket: {
