@@ -119,6 +119,15 @@ export class WebcamLEDScreens {
         }
     }
 
+    /** Toggle para activar/desactivar la webcam desde controles debug */
+    _toggleWebcam() {
+        if (this._active) {
+            this.dispose();
+        } else {
+            this.init();
+        }
+    }
+
     /** Liberar cámara, canvas y meshes de la escena */
     dispose() {
         // Detener stream de video (libera la cámara del usuario)

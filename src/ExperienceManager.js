@@ -6,6 +6,7 @@
  * desde un componente Angular que proporciona los containers DOM.
  */
 
+import * as THREE from 'three';
 import { RenderManager } from './experience/RenderManager.js';
 import { View } from './experience/View.js';
 import { Player } from './experience/Player.js';
@@ -66,6 +67,9 @@ export class ExperienceManager {
         );
         this.webcamScreens.init(); // Async — no bloquea la construcción
 
+        // ─── Controles debug para calibración de pantallas webcam ────────────────
+        this._setupWebcamDebugControls();
+
         // Conectar WebSocket para recibir mensajes de Discord en tiempo real
         this.wsClient = new WebSocketClient(
             Config.websocket.endpoint,
@@ -88,6 +92,61 @@ export class ExperienceManager {
             this._originalOnResize();
             this.view.onResize();
         };
+    }
+
+    /**
+     * Configura el folder de lil-gui con controles de calibración para las pantallas webcam.
+     * Los cambios de posición/tamaño se aplican inmediatamente a los meshes existentes.
+     * Los parámetros de procesamiento (grid, dot, interval) se leen dinámicamente en cada frame.
+     */
+    _setupWebcamDebugControls() {
+        const wcFolder = this.modeSelector.gui.addFolder('Webcam LED Screens');
+        const wcConfig = Config.webcam;
+        const wcScreens = this.webcamScreens;
+
+        // ─── Geometría y posición de las pantallas ───────────────────────────────
+
+        wcFolder.add(wcConfig, 'screenRadius', 200, 1000).name('Radio').onChange(v => {
+            wcScreens._screens.forEach((screen, i) => {
+                const angle = (i / wcConfig.screenCount) * Math.PI * 2;
+                screen.mesh.position.x = Math.cos(angle) * v;
+                screen.mesh.position.z = Math.sin(angle) * v;
+                screen.mesh.lookAt(0, wcConfig.screenAltitude, 0);
+            });
+        });
+
+        wcFolder.add(wcConfig, 'screenWidth', 100, 600).name('Ancho').onChange(v => {
+            wcScreens._screens.forEach(screen => {
+                screen.mesh.geometry.dispose();
+                screen.mesh.geometry = new THREE.PlaneGeometry(v, wcConfig.screenHeight);
+            });
+        });
+
+        wcFolder.add(wcConfig, 'screenHeight', 50, 400).name('Alto').onChange(v => {
+            wcScreens._screens.forEach(screen => {
+                screen.mesh.geometry.dispose();
+                screen.mesh.geometry = new THREE.PlaneGeometry(wcConfig.screenWidth, v);
+            });
+        });
+
+        wcFolder.add(wcConfig, 'screenAltitude', -100, 200).name('Altitud').onChange(v => {
+            wcScreens._screens.forEach((screen) => {
+                screen.mesh.position.y = v;
+                screen.mesh.lookAt(0, v, 0);
+            });
+        });
+
+        // ─── Parámetros de procesamiento LED (se leen en cada frame) ─────────────
+
+        wcFolder.add(wcConfig, 'gridWidth', 16, 128).step(1).name('Grid cols');
+        wcFolder.add(wcConfig, 'gridHeight', 9, 72).step(1).name('Grid rows');
+        wcFolder.add(wcConfig, 'dotRadiusRatio', 0.3, 1.0).name('Dot radius');
+        wcFolder.add(wcConfig, 'frameInterval', 500, 5000).name('Frame interval');
+
+        // ─── Toggles de control ─────────────────────────────────────────────────
+
+        wcFolder.add(wcScreens, '_beatPaused').name('Pausar beat');
+        wcFolder.add(wcScreens, '_toggleWebcam').name('Toggle webcam');
     }
 
     /** Inicia la reproducción de audio y el loop de animación */
