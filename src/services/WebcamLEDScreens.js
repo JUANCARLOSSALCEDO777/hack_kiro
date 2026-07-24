@@ -40,7 +40,7 @@ export class WebcamLEDScreens {
         this._bufferIndex = 0;
         this._lastCaptureTime = 0;
 
-        // Beat reaction
+        // Beat reaction — activado por defecto
         this._beatPaused = false;
 
         // Pausa por visibilidad del tab
@@ -105,6 +105,21 @@ export class WebcamLEDScreens {
             if (frame) {
                 this._processLED(frame);
                 this._rotateBuffer();
+            }
+        }
+
+        // Seguir la posición del jugador — las pantallas se mueven con él
+        if (this._player && this._player.camera) {
+            const px = this._player.camera.position.x;
+            const pz = this._player.camera.position.z;
+            const { screenCount, screenRadius, screenAltitude } = this._config;
+
+            for (let i = 0; i < this._screens.length; i++) {
+                const angle = (i / screenCount) * Math.PI * 2;
+                const mesh = this._screens[i].mesh;
+                mesh.position.x = px + Math.cos(angle) * screenRadius;
+                mesh.position.z = pz + Math.sin(angle) * screenRadius;
+                mesh.lookAt(px, screenAltitude, pz);
             }
         }
 

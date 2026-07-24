@@ -147,6 +147,18 @@ export class ExperienceManager {
 
         wcFolder.add(wcScreens, '_beatPaused').name('Pausar beat');
         wcFolder.add(wcScreens, '_toggleWebcam').name('Toggle webcam');
+
+        // ─── Controles de cámara del Player ─────────────────────────────────────
+
+        const playerFolder = this.modeSelector.gui.addFolder('Player Camera');
+        const player = this.player;
+
+        playerFolder.add(player, 'velocity', 50, 500).name('Velocidad');
+        playerFolder.add(player, 'altitude', 20, 300).name('Altitud');
+        playerFolder.add(player, 'targetDistance', 50, 500).name('Target dist');
+        playerFolder.add(player.camera, 'fov', 10, 120).name('FOV').onChange(() => {
+            player.camera.updateProjectionMatrix();
+        });
     }
 
     /** Inicia la reproducción de audio y el loop de animación */

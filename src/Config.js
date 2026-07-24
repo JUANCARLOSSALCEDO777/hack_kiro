@@ -45,15 +45,15 @@ export const Config = {
 
     webcam: {
         enabled: true,
-        frameInterval: 1500,     // ms entre capturas
+        frameInterval: 1017.5,   // ms entre capturas
         gridWidth: 64,           // Columnas del dot-grid
         gridHeight: 36,          // Filas del dot-grid
-        dotRadiusRatio: 0.8,     // Radio del punto relativo a celda (0-1)
+        dotRadiusRatio: 0.7417,  // Radio del punto relativo a celda (0-1)
         screenCount: 8,          // Número de pantallas alrededor
-        screenRadius: 600,       // Distancia de las pantallas al centro
+        screenRadius: 1000,      // Distancia de las pantallas al centro
         screenWidth: 300,        // Ancho de cada pantalla (unidades 3D)
         screenHeight: 170,       // Alto de cada pantalla
-        screenAltitude: 50       // Altura Y de las pantallas
+        screenAltitude: 140.9    // Altura Y de las pantallas
     },
 
     // _______________________________________________________________________________________ WebSocket
