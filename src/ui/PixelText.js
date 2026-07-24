@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { NO_BLOOM_LAYER } from '../experience/View.js';
 
 // Textos de prueba (futuro: llegan por WebSocket)
-const TEST_TEXTS = ['KIRO', 'DEV', 'HACKATHON', 'CODE', 'ANGULAR', 'THREE.JS', 'WEBGL', 'SHADER', 'RENDER', 'PIXEL', 'BEAT', 'FLOW', 'NEON', 'DREAM', 'PULSE'];
+const TEST_TEXTS = ['KIRO', 'HACKATHON', 'DISCORD 3D'];
 
 const TEXT_SPEED = 150;
 const SPAWN_DISTANCE = 1200;

@@ -17,6 +17,8 @@ import { Stars } from './particles/Stars.js';
 import { LuminousSpheres } from './particles/LuminousSpheres.js';
 import { PixelText } from './ui/PixelText.js';
 import { ModeSelector } from './ui/ModeSelector.js';
+import { DebugModeManager } from './ui/DebugModeManager.js';
+import { WebSocketClient } from './services/WebSocketClient.js';
 import { Config } from './Config.js';
 
 export class ExperienceManager {
@@ -53,6 +55,23 @@ export class ExperienceManager {
         this.spheres = new LuminousSpheres(this.view.scene, this.terrain);
         this.pixelText = new PixelText(this.view.scene, this.player);
         this.modeSelector = new ModeSelector(this.beatEvents, this.terrain, this.spheres, this.uiContainer);
+        this.debugModeManager = new DebugModeManager(this.modeSelector.gui);
+
+        // Conectar WebSocket para recibir mensajes de Discord en tiempo real
+        this.wsClient = new WebSocketClient(
+            Config.websocket.endpoint,
+            (payload) => {
+                try {
+                    const text = payload?.text;
+                    if (!text) return;
+                    this.pixelText.addText(text);
+                } catch (error) {
+                    console.error('[ExperienceManager] Error procesando mensaje WebSocket:', error);
+                }
+            },
+            Config.websocket.reconnect
+        );
+        this.wsClient.connect();
 
         // Propagar resize del container a View
         this._originalOnResize = this.renderManager.onResize.bind(this.renderManager);
@@ -134,6 +153,11 @@ export class ExperienceManager {
 
         this.running = false;
 
+        // Desconectar WebSocket antes de destruir subsistemas
+        if (this.wsClient) {
+            this.wsClient.disconnect();
+        }
+
         // Cancelar frame pendiente
         if (this.rafId !== null) {
             cancelAnimationFrame(this.rafId);
@@ -143,6 +167,7 @@ export class ExperienceManager {
         // Dispose de subsistemas que tienen cleanup explícito
         this.player.dispose();
         this.music.dispose();
+        this.debugModeManager.dispose();
         this.modeSelector.dispose();
         this.renderManager.dispose();
 
@@ -158,5 +183,7 @@ export class ExperienceManager {
         this.spheres = null;
         this.pixelText = null;
         this.modeSelector = null;
+        this.debugModeManager = null;
+        this.wsClient = null;
     }
 }
