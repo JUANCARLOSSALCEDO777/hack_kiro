@@ -43,9 +43,9 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref WebSocketApi
-      RouteKey: 'getConnections'
+      RouteKey: 'sendMessage'
       AuthorizationType: NONE
-      OperationName: GetConnectionsRoute
+      OperationName: SendMessageRoute
       Target: !Sub 'integrations/${GetConnectionsIntegration}'
 
   # --- Integraciones (todas apuntan al mismo Lambda) ---
@@ -97,7 +97,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: Discord3DMessages-ConnectionHandler
-      Description: Gestiona $connect, $disconnect y getConnections. IDs en memoria.
+      Description: Gestiona $connect, $disconnect y sendMessage. IDs en memoria.
       Handler: connect.handler
       CodeUri: lambda/
       Runtime: nodejs20.x

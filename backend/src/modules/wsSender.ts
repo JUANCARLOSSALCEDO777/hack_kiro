@@ -1,19 +1,15 @@
 /**
- * WsSender — Broadcast de mensajes vía API Gateway Management API.
+ * WsSender — Broadcast de mensajes vía API Gateway WebSocket.
  *
- * El bot en EC2 obtiene los connection IDs activos invocando la ruta
- * getConnections del Lambda, y luego envía el payload a cada uno
- * directamente por la Management API (@connections).
+ * El bot se conecta como cliente WebSocket al API Gateway y envía
+ * mensajes con action 'sendMessage'. El Lambda se encarga de hacer
+ * broadcast a todos los clientes frontend conectados.
  *
- * Si un connectionId está stale (410 Gone), se ignora sin romper el broadcast.
- * Ante errores de red se reintenta una vez antes de continuar.
+ * Este enfoque evita el problema de HTTP 426 — API Gateway WebSocket
+ * solo acepta mensajes vía la conexión WebSocket, no vía HTTP directo.
  */
 
-import {
-  ApiGatewayManagementApiClient,
-  PostToConnectionCommand,
-  GoneException,
-} from '@aws-sdk/client-apigatewaymanagementapi';
+import WebSocket from 'ws';
 
 export interface MessagePayload {
   type: 'message';
@@ -23,121 +19,76 @@ export interface MessagePayload {
 }
 
 export interface WsSenderConfig {
-  apiEndpoint: string; // https://{api-id}.execute-api.{region}.amazonaws.com/{stage}
+  apiEndpoint: string; // wss://{api-id}.execute-api.{region}.amazonaws.com/{stage}
 }
 
 export class WsSender {
-  private readonly client: ApiGatewayManagementApiClient;
-  private readonly apiEndpoint: string;
+  private ws: WebSocket | null = null;
+  private readonly endpoint: string;
+  private reconnecting = false;
 
   constructor(config: WsSenderConfig) {
-    this.apiEndpoint = config.apiEndpoint;
-
-    // El endpoint de la Management API es el mismo del stage del API Gateway
-    this.client = new ApiGatewayManagementApiClient({
-      endpoint: config.apiEndpoint,
-    });
+    // Asegurar que el endpoint use wss://
+    this.endpoint = config.apiEndpoint.replace('https://', 'wss://');
+    this.connect();
   }
 
   /**
-   * Envía el payload a todos los clientes WebSocket conectados.
-   * Obtiene los IDs activos del Lambda y postea a cada uno.
+   * Envía el payload al API Gateway vía WebSocket.
+   * El Lambda se encarga de hacer broadcast a todos los frontends.
    */
   async broadcast(payload: MessagePayload): Promise<void> {
-    let connectionIds: string[];
-
-    try {
-      connectionIds = await this.getConnectionIds();
-    } catch (error) {
-      console.error('[WsSender] Error obteniendo connection IDs:', error);
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn('[WsSender] WebSocket no conectado, mensaje descartado');
       return;
     }
 
-    if (connectionIds.length === 0) {
-      console.log('[WsSender] Sin conexiones activas, broadcast omitido');
-      return;
-    }
-
-    const data = Buffer.from(JSON.stringify(payload));
-
-    // Enviar a todas las conexiones en paralelo sin que un fallo individual detenga el resto
-    const results = await Promise.allSettled(
-      connectionIds.map((connectionId) =>
-        this.sendToConnection(connectionId, data)
-      )
-    );
-
-    const failed = results.filter((r) => r.status === 'rejected').length;
-    if (failed > 0) {
-      console.warn(`[WsSender] ${failed}/${connectionIds.length} envíos fallaron`);
-    }
-  }
-
-  /**
-   * Obtiene los connection IDs activos invocando la ruta getConnections
-   * del API Gateway WebSocket (Lambda responde con la lista de IDs).
-   */
-  private async getConnectionIds(): Promise<string[]> {
-    // La ruta getConnections es un endpoint HTTP(S) expuesto por el API Gateway
-    // que retorna un JSON con los IDs de las conexiones activas
-    const url = `${this.apiEndpoint.replace('wss://', 'https://')}/getConnections`;
-
-    const response = await this.fetchWithRetry(url);
-    const body = await response.json() as { connectionIds?: string[] };
-
-    return body.connectionIds ?? [];
-  }
-
-  /**
-   * Envía datos a un connectionId específico vía la Management API.
-   * Si el connection ID está stale (410 Gone), lo ignora silenciosamente.
-   */
-  private async sendToConnection(connectionId: string, data: Buffer): Promise<void> {
-    const command = new PostToConnectionCommand({
-      ConnectionId: connectionId,
-      Data: data,
+    const message = JSON.stringify({
+      action: 'sendMessage',
+      ...payload,
     });
 
     try {
-      await this.client.send(command);
-    } catch (error: unknown) {
-      // 410 Gone = la conexión ya no existe, ignorar sin romper el broadcast
-      if (error instanceof GoneException) {
-        console.log(`[WsSender] Connection ${connectionId} stale (410 Gone), ignorada`);
-        return;
-      }
-
-      // Para otros errores, reintentar una vez
-      console.warn(`[WsSender] Error enviando a ${connectionId}, reintentando...`);
-      try {
-        await this.client.send(command);
-      } catch (retryError) {
-        console.error(`[WsSender] Reintento fallido para ${connectionId}:`, retryError);
-      }
+      this.ws.send(message);
+      console.log(`[WsSender] Mensaje enviado: "${payload.text}"`);
+    } catch (error) {
+      console.error('[WsSender] Error enviando mensaje:', error);
     }
   }
 
-  /**
-   * Fetch con un reintento ante errores de red.
-   * Si el primer intento falla, espera brevemente y reintenta.
-   */
-  private async fetchWithRetry(url: string): Promise<Response> {
+  /** Establece la conexión WebSocket con el API Gateway */
+  private connect(): void {
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      return response;
+      this.ws = new WebSocket(this.endpoint);
     } catch (error) {
-      console.warn('[WsSender] Error en fetch, reintentando una vez...', error);
-      // Espera breve antes de reintentar (evita hammering inmediato)
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status} en reintento: ${response.statusText}`);
-      }
-      return response;
+      console.error('[WsSender] Error creando WebSocket:', error);
+      this.scheduleReconnect();
+      return;
     }
+
+    this.ws.on('open', () => {
+      console.log(`[WsSender] Conectado a API Gateway: ${this.endpoint}`);
+      this.reconnecting = false;
+    });
+
+    this.ws.on('close', () => {
+      console.warn('[WsSender] Conexión cerrada con API Gateway');
+      this.scheduleReconnect();
+    });
+
+    this.ws.on('error', (error) => {
+      console.error('[WsSender] Error en WebSocket:', error.message);
+    });
+  }
+
+  /** Reconexión con delay fijo de 5s — suficiente para un hackathon */
+  private scheduleReconnect(): void {
+    if (this.reconnecting) return;
+    this.reconnecting = true;
+
+    setTimeout(() => {
+      console.log('[WsSender] Reconectando a API Gateway...');
+      this.connect();
+    }, 5000);
   }
 }
