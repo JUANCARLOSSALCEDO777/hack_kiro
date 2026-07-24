@@ -19,6 +19,7 @@ import { PixelText } from './ui/PixelText.js';
 import { ModeSelector } from './ui/ModeSelector.js';
 import { DebugModeManager } from './ui/DebugModeManager.js';
 import { WebSocketClient } from './services/WebSocketClient.js';
+import { WebcamLEDScreens } from './services/WebcamLEDScreens.js';
 import { Config } from './Config.js';
 
 export class ExperienceManager {
@@ -56,6 +57,14 @@ export class ExperienceManager {
         this.pixelText = new PixelText(this.view.scene, this.player);
         this.modeSelector = new ModeSelector(this.beatEvents, this.terrain, this.spheres, this.uiContainer);
         this.debugModeManager = new DebugModeManager(this.modeSelector.gui);
+
+        // Webcam LED Screens — pantallas 3D con efecto dot-matrix
+        this.webcamScreens = new WebcamLEDScreens(
+            this.view.scene,
+            this.player,
+            Config.webcam
+        );
+        this.webcamScreens.init(); // Async — no bloquea la construcción
 
         // Conectar WebSocket para recibir mensajes de Discord en tiempo real
         this.wsClient = new WebSocketClient(
@@ -124,6 +133,9 @@ export class ExperienceManager {
             this.state.skyboxPulse = this.beatEvents.getSkyboxPulse();
             this.skybox.update(this.state);
 
+            // Webcam LED Screens — captura periódica y seguimiento de jugador
+            this.webcamScreens.update(this.state);
+
             // Render
             this.view.render();
 
@@ -165,6 +177,7 @@ export class ExperienceManager {
         }
 
         // Dispose de subsistemas que tienen cleanup explícito
+        this.webcamScreens.dispose();
         this.player.dispose();
         this.music.dispose();
         this.debugModeManager.dispose();
@@ -184,6 +197,7 @@ export class ExperienceManager {
         this.pixelText = null;
         this.modeSelector = null;
         this.debugModeManager = null;
+        this.webcamScreens = null;
         this.wsClient = null;
     }
 }
