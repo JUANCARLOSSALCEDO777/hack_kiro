@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Discord 3D Messages — API Gateway WebSocket API + Lambda para gestión de conexiones.
-  Mantiene connection IDs en memoria del Lambda (sin DynamoDB).
+  Discord 3D Messages — API Gateway WebSocket API + Lambda + DynamoDB.
+  Connection IDs almacenados en DynamoDB para broadcast confiable entre instancias.
 
 Globals:
   Function:
@@ -11,7 +11,22 @@ Globals:
     MemorySize: 128
 
 Resources:
-  # API Gateway WebSocket API
+  # --- DynamoDB: almacena connection IDs de forma persistente ---
+
+  ConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Discord3DMessages-Connections
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: connectionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: connectionId
+          KeyType: HASH
+
+  # --- API Gateway WebSocket API ---
+
   WebSocketApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
@@ -39,14 +54,14 @@ Resources:
       OperationName: DisconnectRoute
       Target: !Sub 'integrations/${DisconnectIntegration}'
 
-  GetConnectionsRoute:
+  SendMessageRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref WebSocketApi
       RouteKey: 'sendMessage'
       AuthorizationType: NONE
       OperationName: SendMessageRoute
-      Target: !Sub 'integrations/${GetConnectionsIntegration}'
+      Target: !Sub 'integrations/${SendMessageIntegration}'
 
   # --- Integraciones (todas apuntan al mismo Lambda) ---
 
@@ -64,7 +79,7 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConnectionHandler.Arn}/invocations'
 
-  GetConnectionsIntegration:
+  SendMessageIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref WebSocketApi
@@ -80,14 +95,14 @@ Resources:
       StageName: prod
       AutoDeploy: true
 
-  # --- Deployment (necesario para que las rutas estén disponibles) ---
+  # --- Deployment ---
 
   WebSocketDeployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
       - ConnectRoute
       - DisconnectRoute
-      - GetConnectionsRoute
+      - SendMessageRoute
     Properties:
       ApiId: !Ref WebSocketApi
 
@@ -97,18 +112,26 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: Discord3DMessages-ConnectionHandler
-      Description: Gestiona $connect, $disconnect y sendMessage. IDs en memoria.
+      Description: Gestiona conexiones WS y broadcast via DynamoDB
       Handler: connect.handler
       CodeUri: lambda/
       Runtime: nodejs20.x
       MemorySize: 128
-      # Permiso mínimo: solo gestionar conexiones del API Gateway
+      Environment:
+        Variables:
+          CONNECTIONS_TABLE: !Ref ConnectionsTable
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - execute-api:ManageConnections
               Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*'
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:Scan
+              Resource: !GetAtt ConnectionsTable.Arn
 
   # --- Permisos para que API Gateway invoque el Lambda ---
 
@@ -121,12 +144,10 @@ Resources:
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebSocketApi}/*'
 
 Outputs:
-  # Endpoint WSS para conexión desde el frontend
   WebSocketEndpoint:
-    Description: URL del WebSocket API (WSS) para configurar en frontend y backend
+    Description: URL del WebSocket API (WSS) para frontend y backend
     Value: !Sub 'wss://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
 
-  # Endpoint HTTPS para la Management API (usado por el bot para POST @connections)
   WebSocketManagementEndpoint:
-    Description: URL de la Management API para enviar mensajes a conexiones
+    Description: URL de la Management API para enviar mensajes
     Value: !Sub 'https://${WebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
