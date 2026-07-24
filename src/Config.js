@@ -48,7 +48,7 @@ export const Config = {
         // En producción usa el API Gateway WSS desplegado en AWS.
         endpoint: typeof window !== 'undefined' && window.location.hostname === 'localhost'
             ? 'ws://localhost:4201'
-            : 'wss://xxxxxx.execute-api.us-east-1.amazonaws.com/prod',
+            : 'wss://5w5os085b7.execute-api.us-east-1.amazonaws.com/prod',
         reconnect: {
             initialDelay: 1000,
             maxDelay: 30000,
