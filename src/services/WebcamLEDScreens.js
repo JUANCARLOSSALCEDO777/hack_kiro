@@ -42,30 +42,128 @@ export class WebcamLEDScreens {
 
         // Beat reaction
         this._beatPaused = false;
+
+        // Pausa por visibilidad del tab
+        this._paused = false;
+        this._visibilityHandler = null;
     }
 
     // ─── Interfaz pública ────────────────────────────────────────────────────────
 
-    /** Solicitar cámara y crear pantallas (placeholder — tarea 1.1/1.3/1.4) */
+    /** Solicitar cámara, crear video/canvas auxiliar, y crear pantallas 3D */
     async init() {
-        // TODO: Implementado en tareas 1.1 y 1.3
+        // Verificar soporte de getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            console.info('[WebcamLED] getUserMedia no soportado, pantallas desactivadas');
+            return;
+        }
+
+        try {
+            this._stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 320 }, height: { ideal: 240 } }
+            });
+
+            // Video element oculto como fuente de frames
+            this._video = document.createElement('video');
+            this._video.srcObject = this._stream;
+            this._video.muted = true;
+            this._video.playsInline = true;
+            await this._video.play();
+
+            // Canvas auxiliar de captura (misma resolución que el video)
+            this._captureCanvas = document.createElement('canvas');
+            this._captureCanvas.width = 320;
+            this._captureCanvas.height = 240;
+            this._captureCtx = this._captureCanvas.getContext('2d');
+
+            // Crear las pantallas 3D distribuidas en círculo
+            this._createScreens();
+
+            this._active = true;
+
+            // Listener de visibilidad — pausar captura cuando el tab está oculto
+            this._visibilityHandler = () => { this._paused = document.hidden; };
+            document.addEventListener('visibilitychange', this._visibilityHandler);
+
+        } catch (err) {
+            console.info('[WebcamLED] Permiso de cámara denegado o error:', err.message);
+            this._active = false;
+        }
     }
 
-    /** Gestionar temporización de captura y beat (placeholder — tarea 1.4) */
+    /** Gestionar temporización de captura y beat reaction */
     update(state) {
-        // TODO: Implementado en tarea 1.4
+        if (!this._active || this._paused) return;
+
+        const now = performance.now();
+
+        // Temporización de captura — solo capturar cada frameInterval ms
+        if (now - this._lastCaptureTime >= this._config.frameInterval) {
+            this._lastCaptureTime = now;
+
+            const frame = this._captureFrame();
+            if (frame) {
+                this._processLED(frame);
+                this._rotateBuffer();
+            }
+        }
+
+        // Beat reaction — escalar pantallas con el pulso de la música
+        for (const screen of this._screens) {
+            if (state.skyboxPulse > 0 && !this._beatPaused) {
+                const scale = 1 + state.skyboxPulse * 0.05; // Max ~105%
+                screen.mesh.scale.setScalar(scale);
+            } else {
+                screen.mesh.scale.setScalar(1);
+            }
+        }
     }
 
-    /** Liberar cámara, canvas y meshes (placeholder — tarea 1.4) */
+    /** Liberar cámara, canvas y meshes de la escena */
     dispose() {
-        // TODO: Implementado en tarea 1.4
+        // Detener stream de video (libera la cámara del usuario)
+        if (this._stream) {
+            this._stream.getTracks().forEach(track => track.stop());
+            this._stream = null;
+        }
+
+        // Limpiar video element
+        if (this._video) {
+            this._video.srcObject = null;
+            this._video = null;
+        }
+
+        // Remover meshes de la escena y liberar recursos GPU
+        for (const screen of this._screens) {
+            this._scene.remove(screen.mesh);
+            screen.mesh.geometry.dispose();
+            screen.mesh.material.dispose();
+            screen.texture.dispose();
+        }
+        this._screens = [];
+
+        // Limpiar canvas auxiliar
+        this._captureCanvas = null;
+        this._captureCtx = null;
+
+        // Remover listener de visibilidad
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+            this._visibilityHandler = null;
+        }
+
+        this._active = false;
     }
 
     // ─── Captura (placeholder — tarea 1.1) ───────────────────────────────────────
 
     /** Capturar frame del video al canvas auxiliar */
     _captureFrame() {
-        // TODO: Implementado en tarea 1.1
+        if (!this._video || this._video.readyState < 2) return null;
+
+        // Dibujar el frame actual del video al canvas de captura
+        this._captureCtx.drawImage(this._video, 0, 0, 320, 240);
+        return this._captureCanvas;
     }
 
     // ─── Procesador LED/dot-matrix ───────────────────────────────────────────────
