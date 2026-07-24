@@ -1,0 +1,8 @@
+{
+  "name": "discord-3d-lambda",
+  "version": "1.0.0",
+  "description": "Lambda handler para WebSocket connections y broadcast",
+  "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.1094.0"
+  }
+}
