@@ -159,6 +159,24 @@ export class ExperienceManager {
         playerFolder.add(player.camera, 'fov', 10, 120).name('FOV').onChange(() => {
             player.camera.updateProjectionMatrix();
         });
+
+        // ─── Controles de texto 3D ──────────────────────────────────────────────
+
+        const textFolder = this.modeSelector.gui.addFolder('Text Mode');
+        const textModes = { mode: this.pixelText.mode };
+        textFolder.add(textModes, 'mode', ['pixel', 'particles'])
+            .name('Renderer')
+            .onChange(v => { this.pixelText.setMode(v); });
+
+        // Sub-controles para el modo particles
+        const particleRenderer = this.pixelText._renderers.particles;
+        const pFolder = textFolder.addFolder('Particles Config');
+        pFolder.add(particleRenderer, 'particleCount', 500, 5000).step(100).name('Partículas');
+        pFolder.add(particleRenderer, 'spreadRadius', 50, 500).name('Dispersión');
+        pFolder.add(particleRenderer, 'assembleDuration', 0.3, 5.0).name('T. ensamblaje');
+        pFolder.add(particleRenderer, 'planeScale', 1.0, 6.0).name('Escala');
+        pFolder.add(particleRenderer, 'pointSize', 1.0, 12.0).name('Tamaño punto');
+        pFolder.add(particleRenderer, 'turbulenceAmount', 0.0, 10.0).name('Turbulencia');
     }
 
     /** Inicia la reproducción de audio y el loop de animación */
