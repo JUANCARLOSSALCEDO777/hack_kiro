@@ -153,15 +153,75 @@ export class WebcamLEDScreens {
         return ledCanvas;
     }
 
-    // ─── Buffer circular (placeholder — tarea 1.3) ───────────────────────────────
+    // ─── Buffer circular y pantallas 3D ─────────────────────────────────────────
 
-    /** Rotar buffer circular y actualizar texturas */
+    /**
+     * Rotar buffer circular y actualizar texturas.
+     * Avanza el índice del buffer, copia el LED canvas procesado
+     * a la pantalla correspondiente, y marca solo esa textura como dirty.
+     */
     _rotateBuffer() {
-        // TODO: Implementado en tarea 1.3
+        // Avanzar al siguiente slot del buffer circular
+        this._bufferIndex = (this._bufferIndex + 1) % this._screens.length;
+
+        // Obtener la pantalla donde va el frame nuevo
+        const screen = this._screens[this._bufferIndex];
+
+        // Copiar el LED canvas procesado al canvas de esta pantalla
+        screen.ctx.drawImage(this._ledCanvas, 0, 0);
+
+        // Solo marcar needsUpdate en la textura del frame nuevo (performance)
+        screen.texture.needsUpdate = true;
     }
 
-    /** Crear los N planos distribuidos en la escena */
+    /**
+     * Crear N planos (PlaneGeometry) distribuidos en círculo alrededor del jugador.
+     * Cada plano tiene su propio canvas + CanvasTexture + MeshBasicMaterial.
+     * Las pantallas se orientan hacia el centro y usan fog:false para brillar siempre.
+     */
     _createScreens() {
-        // TODO: Implementado en tarea 1.3
+        const { screenCount, screenRadius, screenWidth, screenHeight, screenAltitude } = this._config;
+
+        for (let i = 0; i < screenCount; i++) {
+            // Distribuir uniformemente en círculo completo
+            const angle = (i / screenCount) * Math.PI * 2;
+
+            // Canvas individual para esta pantalla (buffer de frame LED)
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 288;
+            const ctx = canvas.getContext('2d');
+
+            // Textura vinculada al canvas — Three.js la sube a GPU cuando needsUpdate=true
+            const texture = new THREE.CanvasTexture(canvas);
+
+            // Material con fog:false para que las pantallas brillen sin ser opacadas por la niebla
+            const material = new THREE.MeshBasicMaterial({
+                map: texture,
+                side: THREE.DoubleSide,
+                fog: false,
+                transparent: true,
+                opacity: 0.9
+            });
+
+            const geometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
+            const mesh = new THREE.Mesh(geometry, material);
+
+            // Posicionar en círculo a la altitud configurada
+            mesh.position.set(
+                Math.cos(angle) * screenRadius,
+                screenAltitude,
+                Math.sin(angle) * screenRadius
+            );
+
+            // Orientar el plano hacia el centro (siempre visible para el jugador)
+            mesh.lookAt(0, screenAltitude, 0);
+
+            // renderOrder alto evita z-fighting con el skybox (renderOrder 0)
+            mesh.renderOrder = 10;
+
+            this._scene.add(mesh);
+            this._screens.push({ canvas, ctx, texture, mesh });
+        }
     }
 }
