@@ -98,7 +98,10 @@ export function discordToWs(options: DiscordToWsOptions): void {
 
   client.on( Events.GuildCreate, async ( guild : Guild ) => {
 
-    if( !( guild.id in config.permitedChannels) ) return;
+    console.log(`Se ha entrado al server con el id ${guild.id}`);
+    console.log(`Estos son los servers permitidos: ${config.permitedChannels}`);
+
+    if( !config.permitedChannels.includes(guild.id) ) return;
     logWriter({
       text : `Bot agregado del server: ${guild.name} (${guild.id})`,
       context : discordToWs.name
