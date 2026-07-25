@@ -307,7 +307,10 @@ export class BeatEvents {
         this.terrainTextureMode = mode;
         if (mode === 'solid') {
             this.terrain.material.wireframe = false;
-            this.terrain.material.color.setHex(0x111122);
+            this.terrain.material.color.setHex(0x000000);
+            this.terrain.material.emissive.setHex(0x000000);
+            this.terrain.material.emissiveIntensity = 1.0;
+            this._wireframeOffTime = null;
         } else if (mode === 'wireframe') {
             this.terrain.material.wireframe = true;
             this.terrain.material.color.setHex(0x14FF9D);

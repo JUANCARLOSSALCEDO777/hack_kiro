@@ -21,6 +21,10 @@ import { ModeSelector } from './ui/ModeSelector.js';
 import { DebugModeManager } from './ui/DebugModeManager.js';
 import { WebSocketClient } from './services/WebSocketClient.js';
 import { WebcamLEDScreens } from './services/WebcamLEDScreens.js';
+import { ExperienceDirector } from './director/ExperienceDirector.js';
+import { DebugGUI } from './director/DebugGUI.js';
+import { TransportGUI } from './director/TransportGUI.js';
+import experienceBaseConfig from './director/experience-config.json';
 import { Config } from './Config.js';
 
 export class ExperienceManager {
@@ -85,6 +89,28 @@ export class ExperienceManager {
             Config.websocket.reconnect
         );
         this.wsClient.connect();
+
+        // ─── Experience Director — orquestación cinematográfica ──────────────────
+        this.director = new ExperienceDirector({
+            player: this.player,
+            beatEvents: this.beatEvents,
+            terrain: this.terrain,
+            skybox: this.skybox,
+            stars: this.stars,
+            spheres: this.spheres,
+            webcamScreens: this.webcamScreens,
+            pixelText: this.pixelText,
+            view: this.view,
+            music: this.music
+        });
+
+        // ─── Debug GUI del Experience Director ─────────────────────────────────
+        this.directorDebugGUI = new DebugGUI(this.modeSelector.gui, this.director);
+        this.debugModeManager.registerPanel(this.directorDebugGUI);
+
+        // ─── Transport GUI (panel izquierdo) — timeline + loop de audio ─────────
+        this.transportGUI = new TransportGUI(this.uiContainer, this.music, this.director, experienceBaseConfig);
+        this.debugModeManager.registerPanel(this.transportGUI);
 
         // Propagar resize del container a View
         this._originalOnResize = this.renderManager.onResize.bind(this.renderManager);
@@ -244,6 +270,11 @@ export class ExperienceManager {
                 this.pixelText.setMode(v);
                 updatePFolderVisibility(v);
             });
+
+        // Cerrar todos los sub-folders agregados para que no aparezcan desplegados
+        wcFolder.close();
+        playerFolder.close();
+        textFolder.close();
     }
 
     /** Inicia la reproducción de audio y el loop de animación */
@@ -295,6 +326,13 @@ export class ExperienceManager {
             // Modo cinematográfico — oscila parámetros de cámara
             if (this._updateCinematic) this._updateCinematic(dt);
 
+            // Experience Director — orquestación de fases, beats y secuencias
+            try {
+                this.director.update(this.state, this.music.time || 0);
+            } catch (err) {
+                console.warn('[ExperienceManager] Error en director.update:', err.message);
+            }
+
             // Render
             this.view.render();
 
@@ -335,6 +373,15 @@ export class ExperienceManager {
             this.rafId = null;
         }
 
+        // Dispose del director antes que los subsistemas que utiliza
+        if (this.director) {
+            this.director.dispose();
+        }
+
+        // Dispose de la GUI del director (ya se llama via debugModeManager.dispose,
+        // pero limpiamos la referencia igualmente)
+        this.directorDebugGUI = null;
+
         // Dispose de subsistemas que tienen cleanup explícito
         this.webcamScreens.dispose();
         this.player.dispose();
@@ -358,5 +405,6 @@ export class ExperienceManager {
         this.debugModeManager = null;
         this.webcamScreens = null;
         this.wsClient = null;
+        this.director = null;
     }
 }
