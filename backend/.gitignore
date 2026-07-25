@@ -1,2 +1,4 @@
 node_modules
 .env
+ecosystem2.config.js
+pnpm-lock.yaml
