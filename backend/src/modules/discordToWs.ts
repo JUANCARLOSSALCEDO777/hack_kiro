@@ -86,7 +86,7 @@ export function discordToWs(options: DiscordToWsOptions): void {
         timestamp: Date.now(),
       };
 
-      wsSender.broadcast(payload);
+      await wsSender.broadcast(payload);
     } catch (error) {
       // Resiliencia: un error individual no detiene el pipeline (Req 10.1)
       logWriter({
