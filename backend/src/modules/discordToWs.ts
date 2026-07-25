@@ -7,10 +7,11 @@
  */
 
 import { Client, Events, Message } from 'discord.js';
-import { sanitize, SanitizerConfig, DEFAULT_SUPPORTED_CHARS } from './sanitizer';
-import { RateLimiter, RateLimitConfig } from './rateLimiter';
-import { AiFilterHook, passthroughFilter } from './aiFilterHook';
+import { sanitize, SanitizerConfig } from './sanitizer';
 import { WsSender, MessagePayload } from './wsSender';
+import { ProfanityFilter } from './ProfanityFilter';
+import { DiscordToWsOptions } from '../models/DiscordToWsOptions';
+import { RegexFilter } from './RegexFilter';
 
 /**
  * Interfaz genérica de sender — permite intercambiar entre WsSender (AWS)
@@ -18,18 +19,6 @@ import { WsSender, MessagePayload } from './wsSender';
  */
 export interface BroadcastSender {
   broadcast(payload: MessagePayload): Promise<void>;
-}
-
-export interface DiscordToWsOptions {
-  client: Client;
-  wsApiEndpoint: string;
-  channelId: string;
-  rateLimitConfig: RateLimitConfig;
-  aiFilterHook?: AiFilterHook;
-  maxMessageLength: number;
-  supportedChars: Set<number>;
-  /** Sender inyectable — si no se pasa, se usa WsSender (producción) */
-  sender?: BroadcastSender | undefined;
 }
 
 /**
@@ -41,14 +30,10 @@ export function discordToWs(options: DiscordToWsOptions): void {
     client,
     wsApiEndpoint,
     channelId,
-    rateLimitConfig,
-    aiFilterHook = passthroughFilter,
-    maxMessageLength,
     supportedChars,
+    maxMessageLength,
     sender,
   } = options;
-
-  const rateLimiter = new RateLimiter(rateLimitConfig);
 
   // Si se inyecta un sender externo (LocalWsSender en DEV), usarlo.
   // Si no, crear el WsSender de producción (API Gateway Management API).
@@ -77,21 +62,22 @@ export function discordToWs(options: DiscordToWsOptions): void {
       // 5. Descartar si el texto queda vacío post-sanitización
       if (!sanitized) return;
 
-      // 6. Verificar rate limit
-      if (!rateLimiter.tryConsume()) return;
+      const isToxic = ProfanityFilter.hasProfanity(sanitized) || RegexFilter.hasProfanity(sanitized);
 
-      // 7. Aplicar AI filter hook
-      const filtered = sanitized.slice(0, 20);
+      if( isToxic ) {
+        console.log(`Bloqueado por: ${sanitized}`);
+        return;
+      }
 
       // 8. Construir el payload y transmitir
       const payload: MessagePayload = {
         type: 'message',
-        text: filtered,
+        text: sanitized,
         username: message.author.username,
         timestamp: Date.now(),
       };
 
-      await wsSender.broadcast(payload);
+      wsSender.broadcast(payload);
     } catch (error) {
       // Resiliencia: un error individual no detiene el pipeline (Req 10.1)
       console.error('[discordToWs] Error procesando mensaje:', error);

@@ -1,5 +1,6 @@
 import { Client, Events, GuildMember, Message, OmitPartialGroupDMChannel, TextChannel, User } from "discord.js";
 import { config } from "../../config";
+import { ProfanityFilter } from "./ProfanityFilter";
 
 const messageHandler = ( { client } : { client : Client<boolean> } ) => {
 
@@ -20,6 +21,12 @@ const messageHandler = ( { client } : { client : Client<boolean> } ) => {
     switch (cleanMessage) {
       case 'saluda':
         channelPruebas.send(`Hola ${message.author}!`);
+        break;
+
+      case 'recarga':
+        ProfanityFilter.loadDictionary();
+        channelPruebas.send('Diccionario actualizado...');
+        console.log('Diccionario actualizado...');
         break;
     
       default:

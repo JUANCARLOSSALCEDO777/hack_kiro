@@ -2,7 +2,7 @@
   "name": "hackaton_kiro_aws_back_discord",
   "version": "1.0.0",
   "description": "Bot de Discord para hackaton Kiro AWS",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "build": "tsc",
     "start": "node index.js",
