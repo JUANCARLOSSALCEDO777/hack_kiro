@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "module": "preserve",
+    "module": "commonjs",
     "target": "ES2020",
-    "moduleResolution": "bundler",
     "types": ["node"],
 
 
@@ -26,8 +25,6 @@
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/@discordjs/typings"
-    ],
-    "outDir": "./dist",
-    "rootDir": "."
+    ]
   }
 }

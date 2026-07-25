@@ -81,7 +81,7 @@ export function discordToWs(options: DiscordToWsOptions): void {
       if (!rateLimiter.tryConsume()) return;
 
       // 7. Aplicar AI filter hook
-      const filtered = (await aiFilterHook(sanitized)).slice(0, 20);
+      const filtered = sanitized.slice(0, 20);
 
       // 8. Construir el payload y transmitir
       const payload: MessagePayload = {
