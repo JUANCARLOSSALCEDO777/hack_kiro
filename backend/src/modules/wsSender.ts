@@ -10,6 +10,7 @@
  */
 
 import WebSocket from 'ws';
+import { logWriter } from './logWriter';
 
 export interface MessagePayload {
   type: 'message';
@@ -39,7 +40,10 @@ export class WsSender {
    */
   async broadcast(payload: MessagePayload): Promise<void> {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.warn('[WsSender] WebSocket no conectado, mensaje descartado');
+      logWriter({
+        text : 'WebSocket no conectado, mensaje descartado',
+        context : WsSender.name
+      });
       return;
     }
 
@@ -50,9 +54,17 @@ export class WsSender {
 
     try {
       this.ws.send(message);
-      console.log(`[WsSender] Mensaje enviado: "${payload.text}"`);
+      logWriter({
+        text : `Mensaje enviado: "${payload.text}"`,
+        context : WsSender.name,
+        user: payload.username
+      });
     } catch (error) {
-      console.error('[WsSender] Error enviando mensaje:', error);
+      console.error('Error enviando mensaje:', error);
+      logWriter({
+        text : `Error enviando mensaje: "${error}"`,
+        context : WsSender.name
+      });
     }
   }
 
@@ -61,23 +73,35 @@ export class WsSender {
     try {
       this.ws = new WebSocket(this.endpoint);
     } catch (error) {
-      console.error('[WsSender] Error creando WebSocket:', error);
+      logWriter({
+        text : `Error creando WebSocket: "${error}"`,
+        context : WsSender.name
+      });
       this.scheduleReconnect();
       return;
     }
 
     this.ws.on('open', () => {
-      console.log(`[WsSender] Conectado a API Gateway: ${this.endpoint}`);
+      logWriter({
+        text : `Conectado a API Gateway: ${this.endpoint}`,
+        context : WsSender.name
+      });
       this.reconnecting = false;
     });
 
     this.ws.on('close', () => {
-      console.warn('[WsSender] Conexión cerrada con API Gateway');
+      logWriter({
+        text : 'Conexión cerrada con API Gateway',
+        context : WsSender.name
+      });
       this.scheduleReconnect();
     });
 
     this.ws.on('error', (error) => {
-      console.error('[WsSender] Error en WebSocket:', error.message);
+      logWriter({
+        text : `Error en WebSocket:: ${error.message}`,
+        context : WsSender.name
+      });
     });
   }
 
@@ -87,7 +111,10 @@ export class WsSender {
     this.reconnecting = true;
 
     setTimeout(() => {
-      console.log('[WsSender] Reconectando a API Gateway...');
+      logWriter({
+        text : 'Reconectando a API Gateway...',
+        context : WsSender.name
+      });
       this.connect();
     }, 5000);
   }

@@ -51,7 +51,8 @@ const configPROD : Config = {
   wsChannelId : WS_CHANNEL_ID!,
   rateLimitMax : Number(RATE_LIMIT_MAX) || 20,
   rateLimitWindowMs : Number(RATE_LIMIT_WINDOW_MS) || 60000,
-  maxMessageLength : Number(MAX_MESSAGE_LENGTH) || 50
+  maxMessageLength : Number(MAX_MESSAGE_LENGTH) || 50,
+  permitedChannels : [serverIDDEV!, serverIDPROD!]
 };
 
 const configDESA : Config = {
@@ -65,7 +66,8 @@ const configDESA : Config = {
   wsChannelId : WS_CHANNEL_ID!,
   rateLimitMax : Number(RATE_LIMIT_MAX) || 20,
   rateLimitWindowMs : Number(RATE_LIMIT_WINDOW_MS) || 60000,
-  maxMessageLength : Number(MAX_MESSAGE_LENGTH) || 50
+  maxMessageLength : Number(MAX_MESSAGE_LENGTH) || 50,
+  permitedChannels : [serverIDDEV!, serverIDPROD!]
 };
 
 let config = enviroment === 'PROD' ? configPROD : configDESA;

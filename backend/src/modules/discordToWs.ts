@@ -6,12 +6,14 @@
  * No interfiere con el messageHandler existente (son listeners independientes).
  */
 
-import { Client, Events, Message } from 'discord.js';
+import { Client, Events, Guild, Message, TextChannel } from 'discord.js';
 import { sanitize, SanitizerConfig } from './sanitizer';
 import { WsSender, MessagePayload } from './wsSender';
 import { ProfanityFilter } from './ProfanityFilter';
 import { DiscordToWsOptions } from '../models/DiscordToWsOptions';
 import { RegexFilter } from './RegexFilter';
+import { config } from '../../config';
+import { logWriter } from './logWriter';
 
 /**
  * Interfaz genérica de sender — permite intercambiar entre WsSender (AWS)
@@ -23,7 +25,7 @@ export interface BroadcastSender {
 
 /**
  * Inicia el pipeline Discord → WS registrando un listener adicional en el Client.
- * Cada mensaje pasa por validación, sanitización, rate limit, AI hook y broadcast.
+ * Cada mensaje pasa por validación, sanitización y filtros de palabras seguras.
  */
 export function discordToWs(options: DiscordToWsOptions): void {
   const {
@@ -38,6 +40,8 @@ export function discordToWs(options: DiscordToWsOptions): void {
   // Si se inyecta un sender externo (LocalWsSender en DEV), usarlo.
   // Si no, crear el WsSender de producción (API Gateway Management API).
   const wsSender: BroadcastSender = sender ?? new WsSender({ apiEndpoint: wsApiEndpoint });
+
+  const prefix = "!";
 
   const sanitizerConfig: SanitizerConfig = {
     maxLength: maxMessageLength,
@@ -56,6 +60,8 @@ export function discordToWs(options: DiscordToWsOptions): void {
       // 3. Descartar contenido vacío (pre-sanitización)
       if (!message.content.trim()) return;
 
+      if( message.content.startsWith(prefix) ) return;
+
       // 4. Sanitizar el contenido
       const sanitized = sanitize(message.content, sanitizerConfig);
 
@@ -65,7 +71,10 @@ export function discordToWs(options: DiscordToWsOptions): void {
       const isToxic = ProfanityFilter.hasProfanity(sanitized) || RegexFilter.hasProfanity(sanitized);
 
       if( isToxic ) {
-        console.log(`Bloqueado por: ${sanitized}`);
+        logWriter({
+          text : `Bloqueado por: ${sanitized}`,
+          context : discordToWs.name
+        });
         return;
       }
 
@@ -73,15 +82,48 @@ export function discordToWs(options: DiscordToWsOptions): void {
       const payload: MessagePayload = {
         type: 'message',
         text: sanitized,
-        username: message.author.username,
+        username: message.author.displayName,
         timestamp: Date.now(),
       };
 
       wsSender.broadcast(payload);
     } catch (error) {
       // Resiliencia: un error individual no detiene el pipeline (Req 10.1)
-      console.error('[discordToWs] Error procesando mensaje:', error);
+      logWriter({
+        text : `[discordToWs] Error procesando mensaje: ${error}`,
+        context : discordToWs.name
+      });
     }
+  });
+
+  client.on( Events.GuildCreate, ( guild : Guild ) => {
+
+    if( !( guild.id in config.permitedChannels) ) return;
+    logWriter({
+      text : `Bot agregado del server: ${guild.name} (${guild.id})`,
+      context : discordToWs.name
+    });
+    const payload: MessagePayload = {
+      type: 'message',
+      text: 'CODIGOFACILITO',
+      username: 'kirito',
+      timestamp: Date.now(),
+    };
+    wsSender.broadcast(payload);
+  });
+
+  client.on( Events.GuildDelete, ( guild : Guild ) => {
+    logWriter({
+      text : `Bot eliminado del server: ${guild.name} (${guild.id})`,
+      context : discordToWs.name
+    });
+    const payload: MessagePayload = {
+      type: 'message',
+      text: 'NOCODIGOFACILITO',
+      username: 'kirito',
+      timestamp: Date.now(),
+    };
+    wsSender.broadcast(payload);
   });
 
   console.log(`[discordToWs] Pipeline activo — escuchando canal ${channelId}`);

@@ -12,6 +12,7 @@ interface Config {
   rateLimitMax: number;
   rateLimitWindowMs: number;
   maxMessageLength: number;
+  permitedChannels: string[];
 }
 
 export type { Config };
