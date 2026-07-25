@@ -45,6 +45,8 @@ export class ModeSelector {
         this.gui.domElement.style.top = '16px';
         this.gui.domElement.style.right = '16px';
         this.gui.domElement.style.pointerEvents = 'auto';
+        this.gui.domElement.style.maxHeight = '85vh';
+        this.gui.domElement.style.overflowY = 'auto';
 
         // ─── Modo de terreno ───
         const terrainFolder = this.gui.addFolder('Terreno');
@@ -124,6 +126,12 @@ export class ModeSelector {
                     this.spheres.setPattern(value);
                 }
             });
+
+        // Cerrar sub-folders para que al abrir el panel no esté todo desplegado
+        this.gui.foldersRecursive().forEach(f => f.close());
+
+        // Cerrar el panel por defecto para no saturar la pantalla
+        this.gui.close();
     }
 
     /** Muestra/oculta los controles de spectrum según el modo activo */

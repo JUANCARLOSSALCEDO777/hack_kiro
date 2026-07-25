@@ -19,6 +19,9 @@ export class Player {
 
         this.camera = view.camera;
 
+        // Flag de override del director — si true, el Player no actualiza la cámara
+        this._directorOverride = false;
+
         // Movimiento
         this.angle = 0;
         this.forward = new THREE.Vector2(0, -1);
@@ -93,6 +96,9 @@ export class Player {
     }
 
     update(state) {
+
+        // Si el director cinematográfico tiene el control, no actualizar
+        if (this._directorOverride) return;
 
         const dt = state.deltaTime;
 
