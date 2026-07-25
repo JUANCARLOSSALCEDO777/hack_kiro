@@ -28,6 +28,7 @@ export class WebcamScreensAdapter {
    * @param {boolean} visible
    */
   setVisible(visible) {
+    this._webcamScreens._enabled = visible;
     const screens = this._webcamScreens._screens;
     for (let i = 0; i < screens.length; i++) {
       screens[i].points.visible = visible;

@@ -226,6 +226,10 @@ export class TransportGUI {
       this._updateSelectedPhase();
     }}, 'updatePhase').name('💾 Guardar cambios');
 
+    editFolder.add({ deletePhase: () => {
+      this._deleteSelectedPhase();
+    }}, 'deletePhase').name('🗑 Eliminar fase');
+
     // ─── Botón para capturar una fase completa ───────────────────────────
     this._gui.add({ capturePhase: () => {
       this._captureCurrentPhase();
@@ -692,6 +696,12 @@ export class TransportGUI {
     this._segmentsRendered = false;
     this._refreshPhaseLoopOptions();
 
+    // Forzar recálculo de fase para la posición actual del audio
+    // (necesario para activar la fase t=0 al cargar)
+    const pm = this._director.getPhaseManager();
+    const currentTime = this._music?.audio?.currentTime || 0;
+    pm.recalculatePhase(currentTime);
+
     console.log('[TransportGUI] ✅ Configuración aplicada');
   }
 
@@ -831,6 +841,51 @@ export class TransportGUI {
     console.log(`[TransportGUI] 💾 Fase ${this._selectedPhaseIndex} actualizada: "${presetName}"`, currentConfig);
 
     // Auto-guardar en localStorage
+    this._saveToLocalStorage();
+  }
+
+  /**
+   * Elimina la fase seleccionada: remueve trigger, preset y mapping.
+   */
+  _deleteSelectedPhase() {
+    if (this._selectedPhaseIndex === null) {
+      console.warn('[TransportGUI] No hay fase seleccionada para eliminar');
+      return;
+    }
+
+    const pm = this._director.getPhaseManager();
+    const mapping = this._director.getPhasePresetMapping();
+    const presetName = mapping.get(this._selectedPhaseIndex);
+
+    // Encontrar el trigger correspondiente para obtener su tiempo
+    const triggers = pm.getTriggers();
+    const trigger = triggers.find(t => t.phaseIndex === this._selectedPhaseIndex);
+
+    if (trigger) {
+      pm.removeTrigger(trigger.time);
+    }
+
+    // Remover mapping del mapa REAL del director
+    this._director._phaseToPreset.delete(this._selectedPhaseIndex);
+
+    // Remover preset del director (si existe)
+    if (presetName && this._director._presets) {
+      this._director._presets.delete(presetName);
+    }
+
+    console.log(`[TransportGUI] 🗑 Fase ${this._selectedPhaseIndex} eliminada: "${presetName}"`);
+
+    // Limpiar selección
+    this._selectedPhaseIndex = null;
+    this._loopEnabled = false;
+    this._state.loopEnabled = false;
+    this._controllers.loopEnabled.updateDisplay();
+
+    // Re-renderizar timeline y dropdown
+    this._segmentsRendered = false;
+    this._refreshPhaseLoopOptions();
+
+    // Auto-guardar
     this._saveToLocalStorage();
   }
 

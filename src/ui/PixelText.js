@@ -38,6 +38,7 @@ export class PixelText {
         // Modo de renderizado actual
         this.mode = 'particles';
         this._renderers = {};
+        this._enabled = true;
 
         // Instanciar todos los renderers (lazy: solo el activo se usa)
         for (const [key, RendererClass] of Object.entries(RENDERERS)) {
@@ -104,6 +105,8 @@ export class PixelText {
     }
 
     update(state) {
+        if (!this._enabled) return;
+
         const dt = state.deltaTime;
 
         // Spawn periódico

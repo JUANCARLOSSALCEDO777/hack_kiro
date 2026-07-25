@@ -67,7 +67,7 @@ export class ModeSelector {
                 this.toggleSpectrumControls(value === 'spectrum');
             });
 
-        const textureOptions = { 'Solid': 'solid', 'Wireframe': 'wireframe' };
+        const textureOptions = { 'Solid': 'solid', 'Wireframe': 'wireframe', 'Neon Grid': 'grid', 'Aurora': 'gradient', 'Lava': 'pulse', 'Plasma': 'heatmap', 'Ice': 'ice', 'Toxic': 'toxic', 'Ultraviolet': 'ultraviolet', 'Ember': 'ember', 'Cycle': 'cycle' };
 
         terrainFolder.add(this.params, 'textureMode', textureOptions)
             .name('Textura')
@@ -148,6 +148,45 @@ export class ModeSelector {
         if (this.gui) {
             this.gui.destroy();
             this.gui = null;
+        }
+    }
+
+    /**
+     * Sincroniza los displays de la GUI con el estado actual de los subsistemas.
+     * Llamado desde el loop de animación para reflejar cambios por fases.
+     */
+    syncFromState() {
+        if (!this.gui) return;
+
+        // Terreno: modo actual
+        const currentMode = this.beatEvents.restoreMode;
+        if (currentMode !== this.params.terrainMode) {
+            this.params.terrainMode = currentMode;
+            this.gui.controllersRecursive().forEach(c => c.updateDisplay());
+            this.toggleSpectrumControls(currentMode === 'spectrum');
+        }
+
+        // Textura
+        const currentTexture = this.beatEvents.terrainTextureMode;
+        if (currentTexture !== this.params.textureMode) {
+            this.params.textureMode = currentTexture;
+            this.gui.controllersRecursive().forEach(c => c.updateDisplay());
+        }
+
+        // Patrón de luces
+        const currentPattern = this.spheres ? this.spheres.pattern : null;
+        if (currentPattern && currentPattern !== this.params.lightPattern) {
+            this.params.lightPattern = currentPattern;
+            this.gui.controllersRecursive().forEach(c => c.updateDisplay());
+        }
+
+        // Spectrum params
+        const tp = this.terrain.terrainPlane;
+        if (tp._attackSpeed !== this.params.attack) {
+            this.params.attack = tp._attackSpeed;
+        }
+        if (tp._decaySpeed !== this.params.decay) {
+            this.params.decay = tp._decaySpeed;
         }
     }
 }

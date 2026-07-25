@@ -103,6 +103,7 @@ export class WebcamLEDScreens {
 
         // Beat reaction — activado por defecto
         this._beatPaused = false;
+        this._enabled = true;
 
         // Pausa por visibilidad del tab
         this._paused = false;
@@ -146,7 +147,7 @@ export class WebcamLEDScreens {
     }
 
     update(state) {
-        if (!this._active || this._paused) return;
+        if (!this._active || this._paused || !this._enabled) return;
 
         const dt = state.deltaTime;
         const now = performance.now();

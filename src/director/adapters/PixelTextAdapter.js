@@ -39,8 +39,9 @@ export class PixelTextAdapter {
    */
   setVisible(visible) {
     this._visible = visible;
+    this._pixelText._enabled = visible;
 
-    // Controlar textos actualmente renderizados
+    // Ocultar/mostrar textos actualmente renderizados
     const activeTexts = this._pixelText.activeTexts;
     for (let i = 0; i < activeTexts.length; i++) {
       activeTexts[i].group.visible = visible;

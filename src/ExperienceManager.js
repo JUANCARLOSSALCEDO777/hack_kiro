@@ -333,6 +333,9 @@ export class ExperienceManager {
                 console.warn('[ExperienceManager] Error en director.update:', err.message);
             }
 
+            // Sincronizar GUI con estado actual (refleja cambios por fases)
+            this.modeSelector.syncFromState();
+
             // Render
             this.view.render();
 

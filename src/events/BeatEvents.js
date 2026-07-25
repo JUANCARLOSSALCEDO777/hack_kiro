@@ -85,6 +85,9 @@ export class BeatEvents {
         // ─── Restauración continua del terreno (cada frame) ───
         this.updateTerrainRestore(dt, state);
 
+        // ─── Texturas dinámicas (gradient, pulse, heatmap) ───
+        this._updateDynamicTexture(state);
+
         // ─── Wireframe auto-off ───
         if (this.terrainTextureMode === 'wireframe' && this._wireframeOffTime && state.time > this._wireframeOffTime) {
             this.terrain.material.wireframe = false;
@@ -305,15 +308,181 @@ export class BeatEvents {
 
     setTextureMode(mode) {
         this.terrainTextureMode = mode;
-        if (mode === 'solid') {
-            this.terrain.material.wireframe = false;
-            this.terrain.material.color.setHex(0x000000);
-            this.terrain.material.emissive.setHex(0x000000);
-            this.terrain.material.emissiveIntensity = 1.0;
-            this._wireframeOffTime = null;
-        } else if (mode === 'wireframe') {
-            this.terrain.material.wireframe = true;
-            this.terrain.material.color.setHex(0x14FF9D);
+        this._wireframeOffTime = null;
+
+        const mat = this.terrain.material;
+
+        switch (mode) {
+            case 'solid':
+                mat.wireframe = false;
+                mat.color.setHex(0x000000);
+                mat.emissive.setHex(0x000000);
+                mat.emissiveIntensity = 1.0;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'wireframe':
+                mat.wireframe = true;
+                mat.color.setHex(0x14FF9D);
+                mat.emissive.setHex(0x000000);
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'grid':
+                // Neon grid — wireframe magenta brillante sobre fondo negro
+                mat.wireframe = true;
+                mat.color.setHex(0x000000);
+                mat.emissive.setHex(0xff00ff);
+                mat.emissiveIntensity = 0.7;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'gradient':
+                // Aurora — superficie sólida con emissive cyan/verde brillante
+                mat.wireframe = false;
+                mat.color.setHex(0x001111);
+                mat.emissive.setHex(0x00ffaa);
+                mat.emissiveIntensity = 0.6;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'pulse':
+                // Lava — superficie sólida rojo/naranja intenso
+                mat.wireframe = false;
+                mat.color.setHex(0x110000);
+                mat.emissive.setHex(0xff2200);
+                mat.emissiveIntensity = 0.8;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'heatmap':
+                // Plasma — wireframe dorado/amarillo eléctrico
+                mat.wireframe = true;
+                mat.color.setHex(0x000000);
+                mat.emissive.setHex(0xffcc00);
+                mat.emissiveIntensity = 0.9;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'ice':
+                // Hielo — superficie sólida azul/blanco brillante, estática
+                mat.wireframe = false;
+                mat.color.setHex(0x001a33);
+                mat.emissive.setHex(0x44ccff);
+                mat.emissiveIntensity = 0.7;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'toxic':
+                // Tóxico — wireframe verde ácido intenso, estático
+                mat.wireframe = true;
+                mat.color.setHex(0x000000);
+                mat.emissive.setHex(0x33ff00);
+                mat.emissiveIntensity = 0.8;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'ultraviolet':
+                // Ultravioleta — superficie sólida violeta profundo, estática
+                mat.wireframe = false;
+                mat.color.setHex(0x0a0020);
+                mat.emissive.setHex(0x7700ff);
+                mat.emissiveIntensity = 0.8;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'ember':
+                // Brasas — wireframe naranja/rojo fijo, sin pulso
+                mat.wireframe = true;
+                mat.color.setHex(0x000000);
+                mat.emissive.setHex(0xff4400);
+                mat.emissiveIntensity = 0.7;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                break;
+
+            case 'cycle':
+                // Cycle — alterna entre las texturas estáticas luminosas
+                mat.wireframe = true;
+                mat.color.setHex(0x000000);
+                mat.emissive.setHex(0xff00ff);
+                mat.emissiveIntensity = 0.7;
+                mat.vertexColors = false;
+                mat.needsUpdate = true;
+                this._cycleTextureIndex = 0;
+                this._cycleTextureTimer = 0;
+                break;
+        }
+    }
+
+    /**
+     * Actualización por frame de texturas dinámicas.
+     * Cada modo tiene una animación luminosa distinta.
+     */
+    _updateDynamicTexture(state) {
+        const mat = this.terrain.material;
+        const mode = this.terrainTextureMode;
+
+        if (mode === 'gradient') {
+            // Aurora — oscila entre cyan y verde brillante
+            const t = Math.sin(state.time * 0.5) * 0.5 + 0.5;
+            mat.emissive.setRGB(0, 0.6 + t * 0.4, 0.4 + (1 - t) * 0.4);
+            mat.emissiveIntensity = 0.5 + t * 0.4;
+        }
+
+        else if (mode === 'pulse') {
+            // Lava — pulsa con los beats, brilla más al golpe
+            const pulse = this.skyboxPulse || 0;
+            const base = 0.4;
+            const intensity = base + pulse * 0.6;
+            mat.emissive.setRGB(1.0, 0.1 + pulse * 0.3, 0);
+            mat.emissiveIntensity = intensity;
+        }
+
+        else if (mode === 'heatmap') {
+            // Plasma — parpadeo rápido entre dorado y blanco
+            const t = Math.sin(state.time * 2.0) * 0.5 + 0.5;
+            mat.emissive.setRGB(1.0, 0.7 + t * 0.3, t * 0.3);
+            mat.emissiveIntensity = 0.7 + t * 0.3;
+        }
+
+        else if (mode === 'grid') {
+            // Grid neón — alterna entre magenta y cyan
+            const t = Math.sin(state.time * 0.8) * 0.5 + 0.5;
+            mat.emissive.setRGB(0.6 + t * 0.4, t * 0.2, 1.0 - t * 0.3);
+            mat.emissiveIntensity = 0.6 + t * 0.2;
+        }
+
+        else if (mode === 'cycle') {
+            // Alterna entre las texturas estáticas luminosas cada 2 segundos
+            const CYCLE_PRESETS = [
+                { wireframe: true, color: 0x000000, emissive: 0xff00ff, intensity: 0.7 },   // neon grid (magenta)
+                { wireframe: true, color: 0x000000, emissive: 0x33ff00, intensity: 0.8 },    // toxic (verde ácido)
+                { wireframe: true, color: 0x000000, emissive: 0xff4400, intensity: 0.7 },    // ember (naranja)
+                { wireframe: true, color: 0x000000, emissive: 0xffcc00, intensity: 0.9 },    // plasma (dorado)
+                { wireframe: true, color: 0x000000, emissive: 0x44ccff, intensity: 0.8 },    // ice wire (cyan)
+                { wireframe: true, color: 0x000000, emissive: 0x7700ff, intensity: 0.8 },    // ultraviolet wire
+            ];
+
+            this._cycleTextureTimer = (this._cycleTextureTimer || 0) + state.deltaTime;
+            if (this._cycleTextureTimer >= 2.0) {
+                this._cycleTextureTimer = 0;
+                this._cycleTextureIndex = ((this._cycleTextureIndex || 0) + 1) % CYCLE_PRESETS.length;
+                const preset = CYCLE_PRESETS[this._cycleTextureIndex];
+                mat.wireframe = preset.wireframe;
+                mat.color.setHex(preset.color);
+                mat.emissive.setHex(preset.emissive);
+                mat.emissiveIntensity = preset.intensity;
+            }
         }
     }
 
