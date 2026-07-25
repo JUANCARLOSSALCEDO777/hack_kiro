@@ -96,7 +96,7 @@ export function discordToWs(options: DiscordToWsOptions): void {
     }
   });
 
-  client.on( Events.GuildCreate, ( guild : Guild ) => {
+  client.on( Events.GuildCreate, async ( guild : Guild ) => {
 
     if( !( guild.id in config.permitedChannels) ) return;
     logWriter({
@@ -109,10 +109,10 @@ export function discordToWs(options: DiscordToWsOptions): void {
       username: 'kirito',
       timestamp: Date.now(),
     };
-    wsSender.broadcast(payload);
+    await wsSender.broadcast(payload);
   });
 
-  client.on( Events.GuildDelete, ( guild : Guild ) => {
+  client.on( Events.GuildDelete, async ( guild : Guild ) => {
     logWriter({
       text : `Bot eliminado del server: ${guild.name} (${guild.id})`,
       context : discordToWs.name
@@ -123,7 +123,7 @@ export function discordToWs(options: DiscordToWsOptions): void {
       username: 'kirito',
       timestamp: Date.now(),
     };
-    wsSender.broadcast(payload);
+    await wsSender.broadcast(payload);
   });
 
   console.log(`[discordToWs] Pipeline activo — escuchando canal ${channelId}`);
