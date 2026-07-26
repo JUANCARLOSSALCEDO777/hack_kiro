@@ -24,12 +24,12 @@ export class PixelFontRenderer {
     async _loadFont() {
         const textureLoader = new THREE.TextureLoader();
         const rawTexture = await new Promise((resolve) => {
-            textureLoader.load('/fonts/pixel-font-atlas.png', resolve);
+            textureLoader.load('fonts/pixel-font-atlas.png', resolve);
         });
 
         this.fontTexture = this._makeBlackTransparent(rawTexture);
 
-        const response = await fetch('/fonts/pixel-font-atlas.fnt');
+        const response = await fetch('fonts/pixel-font-atlas.fnt');
         const text = await response.text();
         this.fontData = this._parseBMFont(text);
         this.ready = true;
