@@ -17,8 +17,8 @@ import { Component, input } from '@angular/core';
   styles: `
     :host {
       position: fixed;
-      bottom: 12px;
-      left: 12px;
+      bottom: 4px;
+      left: 8px;
       z-index: 11;
       pointer-events: none;
     }
