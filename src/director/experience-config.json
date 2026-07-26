@@ -1201,7 +1201,7 @@
         "pixelText": true,
         "skybox": true
       },
-      "textureMode": "gradient",
+      "textureMode": "ice",
       "spectrum": {
         "attack": 0.68,
         "decay": 0.01,
@@ -1365,7 +1365,7 @@
         "pixelText": true,
         "skybox": true
       },
-      "textureMode": "ice",
+      "textureMode": "ultraviolet",
       "spectrum": {
         "attack": 0.68,
         "decay": 0.01,

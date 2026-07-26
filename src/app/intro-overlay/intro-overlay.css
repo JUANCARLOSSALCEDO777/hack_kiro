@@ -1,0 +1,254 @@
+/* === Variables del overlay === */
+:host {
+  --fade-duration: 800ms;
+  --fade-timing: ease-out;
+  --bg-opacity: 0.75;
+  --text-color: #f0f0f0;
+  --accent-color: #00e5ff;
+  --accent-glow: rgba(0, 229, 255, 0.4);
+  --button-bg: #00e5ff;
+  --button-text: #0a0a0a;
+  --button-hover-bg: #00b8d4;
+  --focus-ring-color: #ffffff;
+  display: block;
+}
+
+/* === Contenedor principal del overlay === */
+.intro-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, var(--bg-opacity));
+  z-index: 10;
+  pointer-events: all;
+  opacity: 1;
+  transition: opacity var(--fade-duration) var(--fade-timing);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Clase aplicada durante la transición de desvanecimiento */
+.intro-overlay.is-fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* === Contenido central === */
+.intro-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* === Avatar del bot con animación electrónica === */
+.avatar-container {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Entorno visual electrónico: borde glow pulsante */
+  border: 3px solid var(--accent-color);
+  box-shadow:
+    0 0 15px var(--accent-glow),
+    0 0 30px rgba(0, 229, 255, 0.2),
+    inset 0 0 10px rgba(0, 229, 255, 0.1);
+  animation: avatar-pulse 3s ease-in-out infinite;
+}
+
+.bot-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+
+/* Animación de pulso/glow para el avatar (ciclo 3s, dentro de 2-6s) */
+@keyframes avatar-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 15px var(--accent-glow),
+      0 0 30px rgba(0, 229, 255, 0.2),
+      inset 0 0 10px rgba(0, 229, 255, 0.1);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 0 25px var(--accent-glow),
+      0 0 50px rgba(0, 229, 255, 0.35),
+      inset 0 0 15px rgba(0, 229, 255, 0.2);
+    transform: scale(1.03);
+  }
+}
+
+/* === Título === */
+.intro-title {
+  font-size: clamp(24px, 5vw, 2.5rem);
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* === Descripción === */
+.intro-description {
+  font-size: clamp(16px, 2.5vw, 1.125rem);
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.6;
+  max-width: 500px;
+  opacity: 0.9;
+}
+
+/* === Lista de tecnologías === */
+.tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tech-list li {
+  font-size: clamp(14px, 2vw, 0.875rem);
+  color: var(--accent-color);
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* === Instrucciones === */
+.intro-instructions {
+  font-size: clamp(16px, 2.5vw, 1rem);
+  color: var(--text-color);
+  margin: 0;
+  line-height: 1.5;
+  opacity: 0.8;
+  max-width: 450px;
+}
+
+/* === Botón de conectar Discord === */
+.discord-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: clamp(14px, 2.5vw, 1rem);
+  font-weight: 600;
+  color: #ffffff;
+  background: #5865F2;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.625rem 1.5rem;
+  text-decoration: none;
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease,
+    box-shadow 120ms ease;
+  pointer-events: all;
+}
+
+.discord-button:hover {
+  background: #4752C4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(88, 101, 242, 0.4);
+}
+
+.discord-button:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.25);
+}
+
+/* === Botón de entrada === */
+.entry-button {
+  font-size: clamp(16px, 3vw, 1.125rem);
+  font-weight: 600;
+  color: var(--button-text);
+  background: var(--button-bg);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.875rem 2rem;
+  cursor: pointer;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  /* Hover con transición en <=150ms */
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease,
+    box-shadow 120ms ease;
+  position: relative;
+}
+
+/* Hover: cambio visual observable */
+.entry-button:hover:not(:disabled) {
+  background: var(--button-hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+/* Focus visible: indicador con contraste >= 3:1 (blanco sobre fondo oscuro) */
+.entry-button:focus-visible {
+  outline: 3px solid var(--focus-ring-color);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.25);
+}
+
+/* Estado disabled durante fade */
+.entry-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* === Responsive: sin desbordamiento horizontal 320px–3840px === */
+@media (max-width: 480px) {
+  .intro-content {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .avatar-container {
+    width: 80px;
+    height: 80px;
+  }
+
+  .entry-button {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .intro-content {
+    max-width: 720px;
+  }
+
+  .avatar-container {
+    width: 160px;
+    height: 160px;
+  }
+}
