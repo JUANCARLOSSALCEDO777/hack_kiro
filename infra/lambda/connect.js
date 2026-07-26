@@ -35,7 +35,16 @@ exports.handler = async (event) => {
 
       const endpoint = `https://${domainName}/${stage}`;
       const client = new ApiGatewayManagementApiClient({ endpoint });
-      const payload = event.body;
+
+      // Enriquecer el payload con el conteo de viewers conectados
+      let parsedPayload;
+      try {
+        parsedPayload = JSON.parse(event.body);
+      } catch {
+        parsedPayload = {};
+      }
+      parsedPayload.viewerCount = connections.length;
+      const payload = JSON.stringify(parsedPayload);
 
       const staleIds = [];
 
