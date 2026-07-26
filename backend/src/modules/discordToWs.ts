@@ -134,11 +134,15 @@ export function discordToWs(options: DiscordToWsOptions): void {
   // Keepalive: enviar mensaje cada 6 minutos para mantener la conexión activa
   setInterval(async () => {
     const payload: MessagePayload = {
-      type: 'message',
+      type: 'PING',
       text: 'PING',
       username: 'kirito',
       timestamp: Date.now(),
     };
     await wsSender.broadcast(payload);
+    logWriter({
+      text : `Se ha enviado un ping al WS server`,
+      context : discordToWs.name
+    });
   }, 6 * 60 * 1000);
 }
