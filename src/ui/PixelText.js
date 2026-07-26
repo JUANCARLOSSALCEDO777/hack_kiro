@@ -30,9 +30,15 @@ export class PixelText {
     constructor(scene, player) {
         this.scene = scene;
         this.player = player;
-        this.texts = TEST_TEXTS;
+
+        // Textos de fallback que ciclan cuando no hay mensajes de Discord
+        this.fallbackTexts = TEST_TEXTS;
+        this.nextFallbackIndex = 0;
+
+        // Cola prioritaria para mensajes de Discord (se consumen una sola vez)
+        this.discordQueue = [];
+
         this.activeTexts = [];
-        this.nextTextIndex = 0;
         this.timeSinceLastSpawn = SPAWN_INTERVAL;
 
         // Modo de renderizado actual
@@ -67,8 +73,15 @@ export class PixelText {
         const renderer = this.renderer;
         if (!renderer || !renderer.ready) return;
 
-        const str = this.texts[this.nextTextIndex % this.texts.length];
-        this.nextTextIndex++;
+        // Prioridad: consumir de la cola de Discord primero (una sola vez)
+        let str;
+        if (this.discordQueue.length > 0) {
+            str = this.discordQueue.shift();
+        } else {
+            // Fallback: ciclar los textos de prueba
+            str = this.fallbackTexts[this.nextFallbackIndex % this.fallbackTexts.length];
+            this.nextFallbackIndex++;
+        }
 
         const group = renderer.createMesh(str);
         if (!group) return;
@@ -99,9 +112,9 @@ export class PixelText {
         });
     }
 
-    /** Añadir texto a la cola (llamado desde WebSocket) */
+    /** Añadir texto a la cola prioritaria (llamado desde WebSocket) */
     addText(str) {
-        this.texts.push(str);
+        this.discordQueue.push(str);
     }
 
     update(state) {
@@ -109,9 +122,11 @@ export class PixelText {
 
         const dt = state.deltaTime;
 
-        // Spawn periódico
+        // Spawn periódico — si hay mensajes de Discord en cola, spawn inmediato
         this.timeSinceLastSpawn += dt;
-        if (this.timeSinceLastSpawn >= SPAWN_INTERVAL) {
+        const shouldSpawn = this.discordQueue.length > 0 || this.timeSinceLastSpawn >= SPAWN_INTERVAL;
+
+        if (shouldSpawn) {
             this.spawn();
             this.timeSinceLastSpawn = 0;
         }
