@@ -13,7 +13,7 @@ import WebSocket from 'ws';
 import { logWriter } from './logWriter';
 
 export interface MessagePayload {
-  type: 'message';
+  type: 'message' | 'PING';
   text: string;
   username: string;
   timestamp: number;
@@ -36,7 +36,7 @@ export class WsSender {
     // Asegurar que el endpoint use wss://
     this.endpoint = config.apiEndpoint.replace('https://', 'wss://');
     this.connect();
-    this.startReconnectCron();
+    //this.startReconnectCron();
   }
 
   /**

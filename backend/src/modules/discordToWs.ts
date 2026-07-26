@@ -130,4 +130,15 @@ export function discordToWs(options: DiscordToWsOptions): void {
   });
 
   console.log(`[discordToWs] Pipeline activo — escuchando canal ${channelId}`);
+
+  // Keepalive: enviar mensaje cada 6 minutos para mantener la conexión activa
+  setInterval(async () => {
+    const payload: MessagePayload = {
+      type: 'message',
+      text: 'PING',
+      username: 'kirito',
+      timestamp: Date.now(),
+    };
+    await wsSender.broadcast(payload);
+  }, 6 * 60 * 1000);
 }
