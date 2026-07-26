@@ -1,12 +1,12 @@
-# 🎵 Hack Kiro — Experiencia Audiovisual 3D Interactiva en Tiempo Real
+# 🎵 Presentación Rítmica 3D Online
 
 ## Resumen Ejecutivo
 
-**Hack Kiro** es una experiencia audiovisual 3D inmersiva conectada en tiempo real a Discord. Los espectadores escriben mensajes en un canal de Discord, estos viajan a través de un pipeline serverless de AWS y aparecen como textos 3D flotantes dentro de una escena interactiva de Three.js — todo sincronizado al ritmo de la música.
+**Presentación Rítmica 3D Online** es una experiencia audiovisual 3D inmersiva conectada en tiempo real a Discord. Los espectadores escriben mensajes en un canal de Discord, estos viajan a través de un pipeline serverless de AWS y aparecen como textos 3D flotantes dentro de una escena interactiva de Three.js — todo sincronizado al ritmo de la música.
 
 El proyecto demuestra integración profunda entre **AWS serverless** (API Gateway WebSocket, Lambda, DynamoDB), un bot de Discord y un frontend de alto rendimiento (Angular 22 + Three.js), todo orquestado por un sistema de dirección cinematográfica que programa efectos visuales por fases temporales.
 
-**Demo en vivo:** [https://juan-.github.io/hack_kiro/](https://juan-.github.io/hack_kiro/)
+**Demo en vivo:** [https://juancarlossalcedo777.github.io/hack_kiro/](https://juancarlossalcedo777.github.io/hack_kiro/)
 
 ---
 
@@ -395,4 +395,4 @@ git push origin main  # GitHub Actions → build → GitHub Pages
 
 ## Equipo y Contacto
 
-Proyecto desarrollado para el **Hackathon Kiro AWS** — demostrando integración de servicios AWS serverless con una experiencia audiovisual inmersiva en tiempo real, desarrollada de forma estructurada usando Kiro spec-driven development.
+Proyecto desarrollado para el **Hackathon Kiro AWS** — demostrando integración de servicios AWS serverless con una presentación rítmica 3D online en tiempo real, desarrollada de forma estructurada usando Kiro spec-driven development.
