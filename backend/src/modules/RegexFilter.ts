@@ -130,13 +130,14 @@ class RegexFilter {
       { regex: /(.{2,5})\1{4,}/i, category: 'spam' },  // Patrón repetido 4+ veces
 
       // --- Evasión de filtro (leetspeak / caracteres especiales / repetición) ---
-      { regex: /[fph]+[uv4@]+[cks]+[kc]+/i, category: 'evasion' },
-      { regex: /[s$5]+[h#]+[i!1]+[t7]+/i, category: 'evasion' },
-      { regex: /n+[i!1]+[gq]{1,}[e3a@]+[r]+/i, category: 'evasion' },
-      { regex: /p+[u0v1]+[t7]+[a@4]+/i, category: 'evasion' },
-      { regex: /p+[u0v1]+[t7]+[o0]+/i, category: 'evasion' },
-      { regex: /m+[i!1]+[e3]+[r]+[d]+[a@4]+/i, category: 'evasion' },
-      { regex: /v+[e3]+[r]+[g]+[a@4]+/i, category: 'evasion' },
+      // \b evita falsos positivos dentro de palabras normales (ej: "computadora", "disputar")
+      { regex: /\b[fph]+[uv4@]+[cks]+[kc]+\b/i, category: 'evasion' },
+      { regex: /\b[s$5]+[h#]+[i!1]+[t7]+\b/i, category: 'evasion' },
+      { regex: /\bn+[i!1]+[gq]{1,}[e3a@]+[r]+\b/i, category: 'evasion' },
+      { regex: /\bp+[u0v1]+[t7]+[a@4]+\b/i, category: 'evasion' },
+      { regex: /\bp+[u0v1]+[t7]+[o0]+\b/i, category: 'evasion' },
+      { regex: /\bm+[i!1]+[e3]+[r]+[d]+[a@4]+\b/i, category: 'evasion' },
+      { regex: /\bv+[e3]+[r]+[g]+[a@4]+\b/i, category: 'evasion' },
       { regex: /c+h+[i!1]+n+g+[a@4]+/i, category: 'evasion' },
       { regex: /p+[e3]+n+d+[e3]+j+[o0a@4]+/i, category: 'evasion' },
     ];

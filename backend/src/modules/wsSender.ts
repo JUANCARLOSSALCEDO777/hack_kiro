@@ -27,10 +27,44 @@ export class WsSender {
   private ws: WebSocket | null = null;
   private readonly endpoint: string;
   private reconnecting = false;
+  private reconnectTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** Intervalo de reconexión forzada: 1.5 horas (en ms) */
+  private static readonly FORCED_RECONNECT_MS = 90 * 60 * 1000;
 
   constructor(config: WsSenderConfig) {
     // Asegurar que el endpoint use wss://
     this.endpoint = config.apiEndpoint.replace('https://', 'wss://');
+    this.connect();
+    this.startReconnectCron();
+  }
+
+  /**
+   * Inicia un "cron" que fuerza reconexión cada 1.5 horas.
+   * Esto previene que API Gateway cierre la conexión idle
+   * y mantiene el WebSocket fresco.
+   */
+  private startReconnectCron(): void {
+    this.reconnectTimer = setInterval(() => {
+      logWriter({
+        text: 'Reconexión programada (cada 1.5h) — cerrando conexión actual...',
+        context: WsSender.name
+      });
+      this.forceReconnect();
+    }, WsSender.FORCED_RECONNECT_MS);
+  }
+
+  /**
+   * Cierra la conexión actual y reconecta inmediatamente.
+   */
+  private forceReconnect(): void {
+    if (this.ws) {
+      // Eliminar listeners para evitar que el 'close' dispare scheduleReconnect
+      this.ws.removeAllListeners();
+      this.ws.close();
+      this.ws = null;
+    }
+    this.reconnecting = false;
     this.connect();
   }
 
