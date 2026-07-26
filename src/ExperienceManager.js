@@ -41,6 +41,10 @@ export class ExperienceManager {
         this.lastTime = 0;
         this.running = false;
 
+        // Callbacks opcionales para notificar al frontend Angular (no rompen nada si no se asignan)
+        this.onConnectionChange = null;   // (text: string) => void
+        this.onViewerCountChange = null;  // (count: number) => void
+
         // Estado compartido entre subsistemas
         this.state = {
             time: 0,
@@ -81,6 +85,20 @@ export class ExperienceManager {
                 try {
                     const text = payload?.text;
                     if (!text) return;
+
+                    // Filtrar mensaje trigger — no se añade al PixelText_Array
+                    if (text === 'CODIGOFACILITO') {
+                        if (this.onConnectionChange) {
+                            this.onConnectionChange('HACKATHON KIRO • #live');
+                        }
+                        return;
+                    }
+
+                    // Propagar conteo de viewers si el payload lo incluye
+                    if (payload.viewerCount !== undefined && this.onViewerCountChange) {
+                        this.onViewerCountChange(payload.viewerCount);
+                    }
+
                     this.pixelText.addText(text);
                 } catch (error) {
                     console.error('[ExperienceManager] Error procesando mensaje WebSocket:', error);

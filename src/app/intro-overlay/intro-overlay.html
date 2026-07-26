@@ -1,0 +1,74 @@
+<!-- Contenedor principal del overlay con focus trap y accesibilidad -->
+<section
+  #overlayContainer
+  class="intro-overlay"
+  [class.is-fading]="isFading"
+  role="dialog"
+  aria-labelledby="intro-title"
+  aria-label="Pantalla de entrada a la experiencia audiovisual"
+  (keydown)="onKeydown($event)"
+  (transitionend)="onTransitionEnd($event)"
+>
+  <div class="intro-content">
+    <!-- Avatar del bot de Discord con animación electrónica -->
+    <div class="avatar-container">
+      <img
+        src="images/kirito_reporter.jpg"
+        alt="Avatar del bot de Discord Kirito Reporter"
+        class="bot-avatar"
+      />
+    </div>
+
+    <!-- Título del proyecto -->
+    <h1 id="intro-title" class="intro-title">
+      Kirito Reporter Live
+    </h1>
+
+    <!-- Descripción del proyecto -->
+    <p class="intro-description">
+      Experiencia 3D inmersiva en tiempo real sincronizada con audio.
+      Visualiza los mensajes de tu canal de Discord como partículas 3D,
+      navega en el entorno con tu mouse y personaliza cada aspecto visual en tiempo real.
+    </p>
+
+    <!-- Tecnologías utilizadas -->
+    <ul class="tech-list">
+      <li>Angular 22</li>
+      <li>Three.js + GLSL Shaders</li>
+      <li>AWS Lambda + API Gateway + DynamoDB</li>
+      <li>Discord Bot (discord.js)</li>
+      <li>WebSocket en tiempo real</li>
+      <li>Audio reactivo + Beat Detection</li>
+      <li>Webcam → LED 3D Particles</li>
+      <li>Post-processing (Unreal Bloom)</li>
+      <li>CI/CD GitHub Actions</li>
+      <li>Kiro (Spec-Driven Dev)</li>
+    </ul>
+
+    <!-- Botón de conectar Discord -->
+    <a
+      class="discord-button"
+      [href]="discordInviteUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Conectar el bot de Discord a tu servidor"
+    >
+      🤖 Conectar Discord
+    </a>
+
+    <!-- Botón de entrada a la experiencia -->
+    <!-- El click nativo del <button> se dispara también con Enter y Space,
+         por lo que un solo binding (click) cubre los 3 métodos de activación -->
+    <button
+      #entryButton
+      class="entry-button"
+      type="button"
+      [disabled]="isFading"
+      [attr.aria-disabled]="isFading"
+      aria-label="Iniciar la experiencia audiovisual inmersiva"
+      (click)="onEntryClick()"
+    >
+      Iniciar Experiencia
+    </button>
+  </div>
+</section>

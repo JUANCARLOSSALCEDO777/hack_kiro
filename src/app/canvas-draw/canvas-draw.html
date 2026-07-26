@@ -1,8 +1,14 @@
 <div #threeContainer class="three-container"></div>
 <div #uiContainer class="ui-container"></div>
 
-@if (showPlayPrompt) {
-  <div class="play-prompt" (click)="onUserInteraction()">
-    Click para iniciar
-  </div>
+<!-- Overlay de entrada — se remueve del DOM tras la transición de fade -->
+@if (showOverlay) {
+  <app-intro-overlay
+    (startExperience)="onStartExperience()"
+    (fadeComplete)="onFadeComplete()">
+  </app-intro-overlay>
 }
+
+<!-- Indicadores persistentes — visibles siempre, sobre el canvas -->
+<app-connection-indicator [connectionText]="connectionText()"></app-connection-indicator>
+<app-viewer-counter [count]="viewerCount()"></app-viewer-counter>
