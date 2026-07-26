@@ -180,13 +180,33 @@ export class ModeSelector {
             this.gui.controllersRecursive().forEach(c => c.updateDisplay());
         }
 
-        // Spectrum params
+        // Spectrum params — sincronizar con terrainPlane
         const tp = this.terrain.terrainPlane;
+        let spectrumChanged = false;
+
         if (tp._attackSpeed !== this.params.attack) {
             this.params.attack = tp._attackSpeed;
+            spectrumChanged = true;
         }
         if (tp._decaySpeed !== this.params.decay) {
             this.params.decay = tp._decaySpeed;
+            spectrumChanged = true;
+        }
+        if (tp._rotationEnabled !== this.params.rotation) {
+            this.params.rotation = tp._rotationEnabled;
+            spectrumChanged = true;
+        }
+        if (tp._bandGains) {
+            for (let i = 0; i < 8; i++) {
+                if (tp._bandGains[i] !== this.params.bands[i]) {
+                    this.params.bands[i] = tp._bandGains[i];
+                    spectrumChanged = true;
+                }
+            }
+        }
+
+        if (spectrumChanged) {
+            this.gui.controllersRecursive().forEach(c => c.updateDisplay());
         }
     }
 }

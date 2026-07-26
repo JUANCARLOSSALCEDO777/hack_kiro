@@ -135,8 +135,8 @@ export class DebugGUI {
         if (mode === 'first-person') {
           camSystem.stopSequence();
         } else {
-          // Activar modo con duración razonable para debug
-          camSystem.activateMode(mode, {}, 10);
+          // Activar modo — se mantiene fijo hasta cambiar manualmente o por fase
+          camSystem.activateMode(mode, {}, Infinity);
         }
         // Reconstruir sub-folder de parámetros del modo seleccionado
         this._buildCameraModeParamsFolder(mode);
@@ -425,8 +425,8 @@ export class DebugGUI {
         break;
     }
 
-    // Cerrar por defecto para no saturar la interfaz
-    this._camModeParamsFolder.close();
+    // Abrir automáticamente al seleccionar un modo para ver los parámetros
+    this._camModeParamsFolder.open();
   }
 
   /**

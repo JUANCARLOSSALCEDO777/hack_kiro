@@ -303,13 +303,18 @@ export class CameraSystem {
       return;
     }
 
-    // Validar duración
-    const clampedDuration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, duration));
-    if (duration !== clampedDuration) {
-      console.warn(
-        `CameraSystem.activateMode: duración ${duration}s fuera de rango, ` +
-        `clampeada a ${clampedDuration}s`
-      );
+    // Validar duración — Infinity significa "sin timeout" (se detiene por stopSequence)
+    let clampedDuration;
+    if (duration === Infinity) {
+      clampedDuration = Infinity;
+    } else {
+      clampedDuration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, duration));
+      if (duration !== clampedDuration) {
+        console.warn(
+          `CameraSystem.activateMode: duración ${duration}s fuera de rango, ` +
+          `clampeada a ${clampedDuration}s`
+        );
+      }
     }
 
     // Dormir al Player para que no controle la cámara

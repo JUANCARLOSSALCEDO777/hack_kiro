@@ -179,6 +179,9 @@ export class TransportGUI {
 
     // ─── Selector de fase para editar ─────────────────────────────────────
     const editFolder = this._gui.addFolder('✏️ Editar Fase');
+    // Hacer scrollable para soportar muchas fases
+    editFolder.domElement.style.maxHeight = '200px';
+    editFolder.domElement.style.overflowY = 'auto';
     this._phaseLoopState = { selectedPhase: '—' };
     this._selectedPhaseIndex = null;
     this._phaseLoopCtrl = editFolder

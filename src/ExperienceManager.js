@@ -188,6 +188,9 @@ export class ExperienceManager {
             player.camera.updateProjectionMatrix();
         });
 
+        // Guardar refs para sincronizar con interpolaciones de fases
+        this._playerCameraCtrl = { velCtrl, altCtrl, tdCtrl, fovCtrl };
+
         // ─── Modo cinematográfico cíclico ────────────────────────────────────────
 
         // Valores entre los que oscila la cámara
@@ -335,6 +338,14 @@ export class ExperienceManager {
 
             // Sincronizar GUI con estado actual (refleja cambios por fases)
             this.modeSelector.syncFromState();
+
+            // Sincronizar sliders de Player Camera con valores interpolados por fases
+            if (this._playerCameraCtrl) {
+                this._playerCameraCtrl.velCtrl.updateDisplay();
+                this._playerCameraCtrl.altCtrl.updateDisplay();
+                this._playerCameraCtrl.tdCtrl.updateDisplay();
+                this._playerCameraCtrl.fovCtrl.updateDisplay();
+            }
 
             // Render
             this.view.render();

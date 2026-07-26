@@ -29,7 +29,7 @@ import { WebcamScreensAdapter } from './adapters/WebcamScreensAdapter.js';
 import { PixelTextAdapter } from './adapters/PixelTextAdapter.js';
 
 // Límites de validación
-const MAX_PRESETS = 20;
+const MAX_PRESETS = 64;
 const PRESET_NAME_MIN_LENGTH = 1;
 const PRESET_NAME_MAX_LENGTH = 50;
 
@@ -1110,11 +1110,12 @@ export class ExperienceDirector {
       return;
     }
 
-    // Activar el modo cinematográfico con la duración de la fase
+    // Activar el modo cinematográfico — duración infinita para que solo se detenga
+    // al cambiar de fase (stopSequence en _onPhaseChange), no por timeout
     this._cameraSystem.activateMode(
       cameraModeConfig.mode,
       cameraModeConfig.params || {},
-      phaseDuration
+      Infinity
     );
   }
 
