@@ -56,7 +56,7 @@ export function discordToWs(options: DiscordToWsOptions): void {
       if( !message.inGuild() ) return;
 
       // 1. Validar que el mensaje proviene del canal designado
-      if ( !config.permitedChannels.includes( message.guild.id ) ) return;
+      //if ( !config.permitedChannels.includes( message.guild.id ) ) return;
 
       // 2. Descartar mensajes de bots
       if (message.author.bot) return;
