@@ -50,9 +50,13 @@ export function discordToWs(options: DiscordToWsOptions): void {
 
   // Listener adicional — no interfiere con el messageHandler del bot
   client.on(Events.MessageCreate, async (message: Message) => {
+
     try {
+
+      if( !message.inGuild() ) return;
+
       // 1. Validar que el mensaje proviene del canal designado
-      if (message.channelId !== channelId) return;
+      if ( !config.permitedChannels.includes( message.guild.id ) ) return;
 
       // 2. Descartar mensajes de bots
       if (message.author.bot) return;
