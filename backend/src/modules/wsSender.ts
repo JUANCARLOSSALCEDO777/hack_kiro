@@ -28,15 +28,23 @@ export class WsSender {
   private readonly endpoint: string;
   private reconnecting = false;
   private reconnectTimer: ReturnType<typeof setInterval> | null = null;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  private pongReceived = false;
 
-  /** Intervalo de reconexión forzada: 1.5 horas (en ms) */
-  private static readonly FORCED_RECONNECT_MS = 90 * 60 * 1000;
+  /** Intervalo de reconexión forzada: 7 min (en ms) */
+  private static readonly FORCED_RECONNECT_MS = 30 * 60 * 1000;
+
+  /** Intervalo de heartbeat ping: cada 30 segundos */
+  private static readonly HEARTBEAT_MS = 30 * 1000;
+
+  /** Timeout para considerar la conexión muerta si no llega pong */
+  private static readonly PONG_TIMEOUT_MS = 10 * 1000;
 
   constructor(config: WsSenderConfig) {
     // Asegurar que el endpoint use wss://
     this.endpoint = config.apiEndpoint.replace('https://', 'wss://');
     this.connect();
-    //this.startReconnectCron();
+    this.startReconnectCron();
   }
 
   /**
@@ -47,7 +55,7 @@ export class WsSender {
   private startReconnectCron(): void {
     this.reconnectTimer = setInterval(() => {
       logWriter({
-        text: 'Reconexión programada (cada 1.5h) — cerrando conexión actual...',
+        text: 'Reconexión programada (xh) — cerrando conexión actual...',
         context: WsSender.name
       });
       this.forceReconnect();
@@ -58,6 +66,7 @@ export class WsSender {
    * Cierra la conexión actual y reconecta inmediatamente.
    */
   private forceReconnect(): void {
+    this.stopHeartbeat();
     if (this.ws) {
       // Eliminar listeners para evitar que el 'close' dispare scheduleReconnect
       this.ws.removeAllListeners();
@@ -121,6 +130,11 @@ export class WsSender {
         context : WsSender.name
       });
       this.reconnecting = false;
+      this.startHeartbeat();
+    });
+
+    this.ws.on('pong', () => {
+      this.pongReceived = true;
     });
 
     this.ws.on('close', () => {
@@ -128,6 +142,7 @@ export class WsSender {
         text : 'Conexión cerrada con API Gateway',
         context : WsSender.name
       });
+      this.stopHeartbeat();
       this.scheduleReconnect();
     });
 
@@ -137,6 +152,39 @@ export class WsSender {
         context : WsSender.name
       });
     });
+  }
+
+  /**
+   * Inicia el heartbeat: envía ping cada 30s y verifica que llegue pong.
+   * Si no llega pong en 10s, la conexión se considera muerta y se reconecta.
+   */
+  private startHeartbeat(): void {
+    this.stopHeartbeat(); // Limpiar si ya existía
+    this.heartbeatTimer = setInterval(() => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+      this.pongReceived = false;
+      this.ws.ping();
+
+      // Si en PONG_TIMEOUT_MS no llega pong, forzar reconexión
+      setTimeout(() => {
+        if (!this.pongReceived && this.ws) {
+          logWriter({
+            text: 'Heartbeat fallido (sin pong) — forzando reconexión',
+            context: WsSender.name
+          });
+          this.forceReconnect();
+        }
+      }, WsSender.PONG_TIMEOUT_MS);
+    }, WsSender.HEARTBEAT_MS);
+  }
+
+  /** Detiene el heartbeat */
+  private stopHeartbeat(): void {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
   }
 
   /** Reconexión con delay fijo de 5s — suficiente para un hackathon */
@@ -150,6 +198,7 @@ export class WsSender {
         context : WsSender.name
       });
       this.connect();
+
     }, 5000);
   }
 }
