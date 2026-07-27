@@ -130,6 +130,12 @@ export class ExperienceManager {
         this.transportGUI = new TransportGUI(this.uiContainer, this.music, this.director, experienceBaseConfig);
         this.debugModeManager.registerPanel(this.transportGUI);
 
+        // ─── Listener de fin de canción — activa modo desarrollador ──────────────
+        this._onSongEnded = () => {
+            this.debugModeManager.enableActivateOnlyMode();
+        };
+        this.music.audio.addEventListener('ended', this._onSongEnded);
+
         // Propagar resize del container a View
         this._originalOnResize = this.renderManager.onResize.bind(this.renderManager);
         this.renderManager.onResize = () => {
@@ -408,6 +414,12 @@ export class ExperienceManager {
         // Dispose del director antes que los subsistemas que utiliza
         if (this.director) {
             this.director.dispose();
+        }
+
+        // Remover listener de fin de canción
+        if (this.music && this.music.audio && this._onSongEnded) {
+            this.music.audio.removeEventListener('ended', this._onSongEnded);
+            this._onSongEnded = null;
         }
 
         // Dispose de la GUI del director (ya se llama via debugModeManager.dispose,

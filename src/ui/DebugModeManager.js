@@ -28,6 +28,12 @@ export class DebugModeManager {
         this._debugActive = false;
         this._panels = [];
 
+        // Modo "solo activación" — cuando es true, la tecla D solo puede activar, no desactivar
+        this._activateOnly = false;
+
+        // Referencia al letrero de modo desarrollador
+        this._devBanner = null;
+
         // Captura el display original antes de ocultar (por si tiene un valor custom)
         this._originalDisplay = gui.domElement.style.display || '';
 
@@ -47,6 +53,14 @@ export class DebugModeManager {
         // Protección: no togglear si el foco está en un campo editable
         if (BLOCKED_TAGS.includes(tag) || event.target.isContentEditable) return;
 
+        // Si está en modo "solo activación", la tecla D solo puede mostrar, no ocultar
+        if (this._activateOnly) {
+            if (!this._debugActive) {
+                this.show();
+            }
+            return;
+        }
+
         this.toggle();
     }
 
@@ -54,6 +68,9 @@ export class DebugModeManager {
     toggle() {
         // Guard: no operar si ya se hizo dispose
         if (!this._handler) return;
+
+        // Si está en modo "solo activación" y ya está activo, no permitir desactivar
+        if (this._activateOnly && this._debugActive) return;
 
         this._debugActive = !this._debugActive;
         this._applyVisibility();
@@ -69,8 +86,65 @@ export class DebugModeManager {
     /** Fuerza Main_Mode (panel oculto) */
     hide() {
         if (!this._handler) return;
+        // Si está en modo "solo activación", no permitir ocultar
+        if (this._activateOnly) return;
         this._debugActive = false;
         this._applyVisibility();
+    }
+
+    /**
+     * Activa el modo "solo activación" y muestra el letrero de Modo Desarrollador.
+     * La tecla D solo podrá mostrar el panel debug, nunca ocultarlo.
+     * Se usa al finalizar la canción.
+     */
+    enableActivateOnlyMode() {
+        this._activateOnly = true;
+        this.show();
+        this._showDevBanner();
+    }
+
+    /** Crea y muestra el letrero "Modo Desarrollador" en pantalla */
+    _showDevBanner() {
+        // Evitar duplicados
+        if (this._devBanner) return;
+
+        this._devBanner = document.createElement('div');
+        this._devBanner.textContent = '🛠 MODO DESARROLLADOR';
+        this._devBanner.style.cssText = `
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #e94560;
+            border-radius: 8px;
+            padding: 8px 24px;
+            color: #e94560;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            z-index: 9999;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.3), inset 0 0 20px rgba(233, 69, 96, 0.1);
+            animation: devBannerPulse 2s ease-in-out infinite;
+        `;
+
+        // Inyectar animación CSS si no existe
+        if (!document.getElementById('dev-banner-style')) {
+            const style = document.createElement('style');
+            style.id = 'dev-banner-style';
+            style.textContent = `
+                @keyframes devBannerPulse {
+                    0%, 100% { opacity: 0.9; box-shadow: 0 0 20px rgba(233, 69, 96, 0.3), inset 0 0 20px rgba(233, 69, 96, 0.1); }
+                    50% { opacity: 1; box-shadow: 0 0 30px rgba(233, 69, 96, 0.5), inset 0 0 30px rgba(233, 69, 96, 0.2); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(this._devBanner);
     }
 
     /**
@@ -111,6 +185,12 @@ export class DebugModeManager {
         document.removeEventListener('keydown', this._handler);
         this._handler = null;
 
+        // Remover letrero de modo desarrollador
+        if (this._devBanner) {
+            this._devBanner.remove();
+            this._devBanner = null;
+        }
+
         // Dispose de paneles registrados (cada uno puede fallar independientemente)
         for (const panel of this._panels) {
             try {
@@ -121,5 +201,6 @@ export class DebugModeManager {
         this._panels = [];
         this._gui = null;
         this._debugActive = false;
+        this._activateOnly = false;
     }
 }
