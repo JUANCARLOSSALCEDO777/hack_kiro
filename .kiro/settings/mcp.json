@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "threejs-devtools-mcp": {
+      "command": "npx",
+      "args": [
+        "threejs-devtools-mcp"
+      ],
+      "disabled": true,
+      "autoApprove": []
+    },
+    "aws-docs": {
+      "command": "python",
+      "args": [
+        "-m",
+        "uv",
+        "tool",
+        "run",
+        "awslabs.aws-documentation-mcp-server@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}

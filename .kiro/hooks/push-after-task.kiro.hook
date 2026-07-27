@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "name": "Push al completar tarea",
+  "description": "Al terminar de ejecutar una tarea del spec, hace commit de todos los cambios y push automático con un mensaje descriptivo en español",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Se acaba de completar una tarea del spec. Haz git add . para añadir todos los cambios, luego un commit con un mensaje descriptivo en español que resuma los cambios realizados (máximo 72 caracteres en el título). Finalmente haz push a la rama actual."
+  }
+}
