@@ -1,4 +1,4 @@
-# 🎵 Presentación Interactiva — Experiencia 3D Audiovisual
+# Herramienta de Entretenimiento Interactivo 3D
 
 Experiencia 3D inmersiva construida con **Angular 22** y **Three.js**, diseñada para transmisiones en vivo. Los mensajes de un canal de Discord se renderizan como partículas 3D en tiempo real mientras navegas un entorno audiovisual reactivo.
 
@@ -237,4 +237,14 @@ Este proyecto fue desarrollado utilizando **Kiro** con metodología Spec-Driven 
 
 ## 📄 Licencia
 
-Proyecto desarrollado para la Hackathon Kiro 2025.
+Proyecto desarrollado para el Hackathon de Kiro by CódigoFacilito y AWS 2026.
+
+---
+
+## 👥 Autores
+
+| Nombre | GitHub |
+|--------|--------|
+| Juan Carlos Salcedo Licea | [JUANCARLOSSALCEDO777](https://github.com/JUANCARLOSSALCEDO777) |
+| Angel Yair Ochoa Gordillo | [AngelOchoaDev](https://github.com/AngelOchoaDev) |
+| Kiro | Asistente de desarrollo IA |
