@@ -119,6 +119,8 @@ pnpm dev:ws
 
 ```env
 enviroment=DEV
+serverMONIT=tu_server_monitoreo_id
+channelMONIT=tu_channel_monitoreo_id
 
 # Bot Discord — Desarrollo
 clientIDDEV=tu_client_id
@@ -131,7 +133,7 @@ tokenPROD=...
 serverIDPROD=...
 
 # Pipeline WebSocket
-WS_API_ENDPOINT=wss://tu-api-gateway.amazonaws.com/prod
+WS_API_ENDPOINT=wss://tu-api-gateway.execute-api.us-east-1.amazonaws.com/prod
 WS_CHANNEL_ID=id_del_canal_discord
 
 # Rate limiting
