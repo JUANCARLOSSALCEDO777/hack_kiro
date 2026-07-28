@@ -12,7 +12,11 @@ import { PixelFontRenderer } from './text-renderers/PixelFontRenderer.js';
 import { ParticleFontRenderer } from './text-renderers/ParticleFontRenderer.js';
 
 // Textos de prueba (también llegan por WebSocket)
-const TEST_TEXTS = ['KIRO', 'HACKATHON', 'DISCORD 3D'];
+const TEST_TEXTS = [
+    'KIRO', 'HACKATHON', 'DISCORD 3D',
+    'API GATEWAY', 'LAMBDA', 'DYNAMODB',
+    'AWS SAM', 'WEBSOCKET', 'THREE.JS'
+];
 
 const TEXT_SPEED = 150;
 const SPAWN_DISTANCE = 1200;

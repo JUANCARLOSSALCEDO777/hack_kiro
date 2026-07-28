@@ -94,6 +94,9 @@ export class ExperienceManager {
                         return;
                     }
 
+                    // Filtrar keepalive — no se muestra en pantalla
+                    if (text === 'PING') return;
+
                     // Propagar conteo de viewers si el payload lo incluye
                     if (payload.viewerCount !== undefined && this.onViewerCountChange) {
                         this.onViewerCountChange(payload.viewerCount);
