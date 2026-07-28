@@ -237,7 +237,7 @@ Este proyecto fue desarrollado utilizando **Kiro** con metodología Spec-Driven 
 
 ## 📄 Licencia
 
-Proyecto desarrollado para el Hackathon de Kiro by CódigoFacilito y AWS 2026.
+Proyecto desarrollado para el Hackathon de Kiro, organizado por CódigoFacilito y AWS (2026).
 
 ### 🎵 Créditos musicales
 
