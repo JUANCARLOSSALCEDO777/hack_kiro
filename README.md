@@ -217,7 +217,7 @@ El bot escucha mensajes en un canal designado y los reenvía al frontend 3D a tr
 
 El frontend se despliega automáticamente a **GitHub Pages** con cada push a `main` mediante GitHub Actions.
 
-El backend (bot de Discord) se ejecuta como proceso persistente en un servidor con acceso a las credenciales de AWS y Discord.
+El backend (bot de Discord) corre en una **Raspberry Pi 5** como proceso persistente, ejecutado con `tsx` y orquestado mediante **PM2** para garantizar disponibilidad continua y reinicio automático ante fallos.
 
 ---
 
