@@ -241,7 +241,7 @@ Proyecto desarrollado para el Hackathon de Kiro by CódigoFacilito y AWS 2026.
 
 ### 🎵 Créditos musicales
 
-Música utilizada: **"Time Lapse"** por TheFatRat — https://soundcloud.com/thefatrat/thefatrat-time-lapse-1
+Música utilizada: **"Time Lapse"** por [TheFatRat](https://soundcloud.com/thefatrat/thefatrat-time-lapse-1) — https://soundcloud.com/thefatrat/thefatrat-time-lapse-1
 Uso libre con crédito al autor, según los términos del artista.
 
 ---
