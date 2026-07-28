@@ -148,7 +148,7 @@ MAX_MESSAGE_LENGTH=50
 |--------|---------|
 | Navegar | Mover el mouse |
 | Turbo | Click sostenido |
-| Modo Desarrollador | Tecla `D` (disponible al finalizar la canción) |
+| Modo Desarrollador | Tecla `D` o automáticamente al finalizar la canción |
 
 ---
 
